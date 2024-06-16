@@ -17,6 +17,7 @@ module Bloberias
     include("Base/0_types.jl")
     include("Base/kv_interface.jl")
     include("Base/lite_interface.jl")
+    include("Base/lock.jl")
     include("Base/scope_interface.jl")
     include("Base/utils.jl")
     
@@ -34,6 +35,7 @@ module Bloberias
     include("BlobBatchBase/blob.jl")
     include("BlobBatchBase/filesys.jl")
     include("BlobBatchBase/loading.jl")
+    include("BlobBatchBase/lock.jl")
     include("BlobBatchBase/serialize.jl")
 
     #! include Utils

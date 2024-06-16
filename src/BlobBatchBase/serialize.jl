@@ -51,7 +51,7 @@ function Serialization.serialize(bb::BlobBatch; ignoreempty = true)
 end
 
 function _inline_newbatch!(bb::BlobBatch)
-    bb.uuid = uuid_str()
+    bb.uuid = uuid_int()
     bb.meta = OrderedDict()
     bb.uuids = OrderedSet{Int128}()
     bb.frames = OrderedDict()

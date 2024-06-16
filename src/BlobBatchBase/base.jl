@@ -9,14 +9,14 @@ BlobBatch(B::Bloberia, group::AbstractString, uuid) = BlobBatch(B, group, uuid,
     OrderedDict(), OrderedSet{Int128}(), OrderedDict(), 
     OrderedDict()
 )
-BlobBatch(B::Bloberia, group::AbstractString) = BlobBatch(B, group, uuid_str())
-BlobBatch(B::Bloberia) = BlobBatch(B, BLOBBATCH_DEFAULT_FRAME_NAME, uuid_str())
+BlobBatch(B::Bloberia, group::AbstractString) = BlobBatch(B, group, uuid_int())
+BlobBatch(B::Bloberia) = BlobBatch(B, BLOBBATCH_DEFAULT_FRAME_NAME, uuid_int())
 
 ## --.--. - .-. .- .--.-.- .- .---- ... . .-.-.-.- 
 import Base.show
 function Base.show(io::IO, bb::BlobBatch)
     _ondemand_loaduuids!(bb)
-    print(io, "BlobBatch(", bb.uuid, ") with ", length(bb.uuids), " blob(s)...")
+    print(io, "BlobBatch(", repr(bb.uuid), ") with ", length(bb.uuids), " blob(s)...")
     isempty(bb.frames) && return
     
     print(io, "\nLoaded frames: ")

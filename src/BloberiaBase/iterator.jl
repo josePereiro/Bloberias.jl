@@ -14,7 +14,8 @@ function batches(B::Bloberia, group_pt = nothing;
         ts = map(Iterators.partition(paths, n)) do t_paths
             Threads.@spawn for path in t_paths
                 _isbatchdir(path) || continue
-                group, uuid = _split_batchname(path)
+                group, uuid_str = _split_batchname(path)
+                uuid = parse(UInt128, uuid_str)
                 # filter
                 _ismatch(group_pt, group) || continue
                 bb = BlobBatch(B, group, uuid)
@@ -35,13 +36,19 @@ end
 function foreach_batch(f::Function, B::Bloberia, group_pt = nothing; 
         sortfun = identity, 
         ch_size::Int = nthreads(), 
-        preload = []
+        preload = [], 
+        locked = false
     )
     ret = nothing
     bbs = batches(B, group_pt; sortfun, ch_size, preload)
     for bb in bbs
-        ret = f(bb)
-        ret === :break && break
+        try
+            locked && lock(bb)
+            ret = f(bb)
+            ret === :break && break
+        finally
+            locked && unlock(bb)
+        end
     end
     return ret
 end

@@ -15,7 +15,7 @@ function _isbatchdir(path)
     return false
 end
 
-_batchpath(dir, group, uuid) = joinpath(dir, string(group, ".", uuid))
+_batchpath(dir, group, uuid::UInt128) = joinpath(dir, string(group, ".", repr(uuid)))
 
 function _split_batchname(path)
     base = basename(path)
@@ -27,7 +27,7 @@ end
 function _hasfilesys(bb::BlobBatch)
     _hasfilesys(bb.B) || return false
     isempty(string(bb.group)) && return false
-    isempty(bb.uuid) && return false
+    # isempty(bb.uuid) && return false
     return true
 end
 

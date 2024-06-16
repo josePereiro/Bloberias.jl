@@ -19,7 +19,30 @@ function Base.show(io::IO, B::Bloberia)
     end
 end
 
+## --.--. - .-. .- .--.-.- .- .---- ... . .-.-.-.- 
+import Base.getindex
+# uuid indexing
+function Base.getindex(B::Bloberia, uuid0::UInt128)
+    for bb in B
+        bb.uuid == uuid0 && return bb
+    end
+    error("Batch not found, uuid: ", repr(uuid0))
+end
 
+# order indexing
+# WARNING: order is not controlled
+function Base.getindex(B::Bloberia, idx::Integer)
+    @assert idx <= batchcount(B)
+    @assert idx > 0
+    for (i, bb) in enumerate(B)
+        i == idx && return bb
+    end
+end
+# collect fallback
+function Base.getindex(B::Bloberia, idx)
+    bbs = collect(batches(B))
+    return bbs[idx]
+end
 
 ## --.--. - .-. .- .--.-.- .- .---- ... . .-.-.-.- 
 # filesys
@@ -39,3 +62,4 @@ Base.rm(B::Bloberia; force = true, recursive = true) =
 #     for bb in bbs
 #     end
 # end
+

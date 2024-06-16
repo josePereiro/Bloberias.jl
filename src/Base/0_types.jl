@@ -8,8 +8,8 @@
 # .
 mutable struct Bloberia
     root::String
-    temp::OrderedDict   # RAM only
     meta::OrderedDict   # Persistants
+    temp::OrderedDict   # RAM only
 end
 
 ## .-- . -. - .--..- -- .- - --..-.-.- .- -.--
@@ -34,7 +34,7 @@ end
 mutable struct BlobBatch
     B::Bloberia                          # Parent folder
     group::String                        # Batch group (defaul "0")
-    uuid::String                         # use UUIDs.uuid4().value
+    uuid::UInt128                         # use UUIDs.uuid4().value
     # disk
     meta::OrderedDict{String, Any}       # config/state/meta in general
     uuids::OrderedSet{UInt128}           # defines which blobs are present

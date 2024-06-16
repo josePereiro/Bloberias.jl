@@ -5,8 +5,8 @@ BlobBatch(B::Bloberia, group::AbstractString, uuid) = BlobBatch(B, group, uuid,
     OrderedDict(), Int128[], OrderedDict(), OrderedDict(), 
     OrderedDict()
 )
-BlobBatch(B::Bloberia, group::AbstractString) = BlobBatch(B, group, uuid_str())
-BlobBatch(B::Bloberia) = BlobBatch(B, BLOBBATCH_DEFAULT_GROUP, uuid_str())
+BlobBatch(B::Bloberia, group::AbstractString) = BlobBatch(B, group, uuid_int())
+BlobBatch(B::Bloberia) = BlobBatch(B, BLOBBATCH_DEFAULT_GROUP, uuid_int())
 
 ## --.--. - .-. .- .--.-.- .- .---- ... . .-.-.-.- 
 blob(bb::BlobBatch) = Blob(bb)

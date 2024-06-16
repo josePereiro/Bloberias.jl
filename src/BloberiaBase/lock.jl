@@ -12,3 +12,8 @@ Base.islocked(B::Bloberia) = _islocked(B)
 import Base.unlock
 Base.unlock(B::Bloberia; force = false) = _unlock(B; force) 
     
+function unlock_batches(B::Bloberia; force = true)
+    for bb in B
+        unlock(bb; force)
+    end
+end

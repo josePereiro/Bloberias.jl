@@ -39,7 +39,7 @@ function Serialization.serialize(bb::BlobBatch)
 end
 
 function _inline_newbatch!(bb::BlobBatch)
-    bb.uuid = uuid_str()
+    bb.uuid = uuid_int()
     bb.meta = OrderedDict()
     bb.uuids = Int128[]
     bb.lite = OrderedDict()
