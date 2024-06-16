@@ -8,6 +8,20 @@ Bloberia(root) = Bloberia(root, OrderedDict(), OrderedDict())
 Bloberia() = Bloberia("")
 
 ## --.--. - .-. .- .--.-.- .- .---- ... . .-.-.-.- 
+import Base.show
+function Base.show(io::IO, B::Bloberia)
+    if _hasfilesys(B)
+        count = batchcount(B)
+        print(io, "Bloberia with ", count, " batch(es)")
+        print(io, "\nfilesys: ", B.root)
+    else
+        print(io, "Bloberia: filesys not found...")
+    end
+end
+
+
+
+## --.--. - .-. .- .--.-.- .- .---- ... . .-.-.-.- 
 # filesys
 function _hasfilesys(B::Bloberia)
     isempty(B.root) && return false

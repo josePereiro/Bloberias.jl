@@ -20,3 +20,14 @@ function headbatch(B::Bloberia, group::AbstractString = BLOBERIA_DEFAULT_BATCH_G
     # If non found, return new
     return isnothing(bb) ? BlobBatch(B, group) : bb
 end
+
+## --.--. - .-. .- .--.-.- .- .---- ... . .-.-.-.- 
+function batchcount(B::Bloberia)
+    count = 0
+    isdir(B.root) || return count
+    for path in readdir(B.root; join = true)
+        _isbatchdir(path) || continue
+        count += 1
+    end
+    return count
+end

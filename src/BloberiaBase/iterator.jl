@@ -12,7 +12,7 @@ function batches(B::Bloberia, group_pt = nothing;
         paths = sortfun(readdir(B.root; join = true))
         n = ceil(Int, length(paths) / ch_size)
         ts = map(Iterators.partition(paths, n)) do t_paths
-            @spawn for path in t_paths
+            Threads.@spawn for path in t_paths
                 _isbatchdir(path) || continue
                 group, uuid = _split_batchname(path)
                 # filter
@@ -31,7 +31,7 @@ end
 
 ## --.--. - .-. .- .--.-.- .- .---- ... . .-.-.-.- 
 # foreach_batch
-# TODO: meke all this multithreading and race safe
+# TODO: make all this multithreading and race safe
 function foreach_batch(f::Function, B::Bloberia, group_pt = nothing; 
         sortfun = identity, 
         ch_size::Int = nthreads(), 

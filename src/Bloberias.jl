@@ -9,6 +9,7 @@ module Bloberias
     using Serialization
     using UUIDs
     using Base.Threads
+    using SimpleLockFiles
 
     #! include .
 
@@ -23,6 +24,7 @@ module Bloberias
     include("BloberiaBase/base.jl")
     include("BloberiaBase/blobbatch.jl")
     include("BloberiaBase/iterator.jl")
+    include("BloberiaBase/lock.jl")
 
     #! include BlobBase
     include("BlobBase/base.jl")

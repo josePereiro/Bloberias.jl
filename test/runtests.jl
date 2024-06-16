@@ -2,5 +2,6 @@ using Bloberias
 using Test
 
 @testset "Bloberias.jl" begin
-    # Write your tests here.
+    B = Bloberia()
+    @test true
 end

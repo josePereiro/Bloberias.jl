@@ -110,9 +110,3 @@ Base.iterate(bb::BlobBatch, state) = iterate(bb.uuids, state)
 import Base.length
 Base.length(bb::BlobBatch) = blobcount(bb)
 
-## --.--. - .-. .- .--.-.- .- .---- ... . .-.-.-.- 
-# Use, uuids
-function blobcount(bb::BlobBatch)
-    _ondemand_loaduuids!(bb)
-    return length(bb.uuids)
-end
