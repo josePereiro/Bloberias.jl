@@ -32,11 +32,13 @@ end
 # order indexing
 # WARNING: order is not controlled
 function Base.getindex(B::Bloberia, idx::Integer)
-    @assert idx <= batchcount(B)
     @assert idx > 0
+    batchcount = 0
     for (i, bb) in enumerate(B)
         i == idx && return bb
+        batchcount += 1
     end
+    @assert idx <= batchcount
 end
 # collect fallback
 function Base.getindex(B::Bloberia, idx)
