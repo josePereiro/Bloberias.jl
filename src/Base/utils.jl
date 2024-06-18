@@ -34,3 +34,24 @@ function _deserialize(path::AbstractString; onerr = rethrow)
         return onerr(e)
     end
 end
+
+function _quoted_join(col, sep)
+    strs = String[]
+    for el in col
+        push!(strs, string("\"", el, "\""))
+    end
+    return join(strs, sep)
+end
+
+
+function _canonical_bytes(bytes)
+    bytes < 1024 && return (bytes, "bytes")
+    bytes /= 1024
+    bytes < 1024 && return (bytes, "kilobytes")
+    bytes /= 1024
+    bytes < 1024 && return (bytes, "Megabytes")
+    bytes /= 1024
+    bytes < 1024 && return (bytes, "Gigabytes")
+    bytes /= 1024
+    return (bytes, "Tb")
+end

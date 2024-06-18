@@ -14,6 +14,8 @@ function Base.show(io::IO, B::Bloberia)
         count = batchcount(B)
         print(io, "Bloberia with ", count, " batch(es)")
         print(io, "\nfilesys: ", B.root)
+        val, unit = _canonical_bytes(filesize(B))
+        print(io, "\ndisk usage: ", round(val; digits = 3), " ", unit)
     else
         print(io, "Bloberia: filesys not found...")
     end
@@ -56,6 +58,18 @@ end
 import Base.rm
 Base.rm(B::Bloberia; force = true, recursive = true) = 
     _hasfilesys(B) && rm(B.root; force, recursive)
+
+import Base.mkpath
+Base.mkpath(B::Bloberia; kwargs...) = mkpath(B.root; kwargs...)
+
+import Base.filesize
+function Base.filesize(B::Bloberia)
+    fsize = 0.0;
+    foreach_batch(B) do bb
+        fsize += filesize(bb)
+    end
+    return fsize
+end
 
 ## --.--. - .-. .- .--.-.- .- .---- ... . .-.-.-.- 
 # Use, uuids

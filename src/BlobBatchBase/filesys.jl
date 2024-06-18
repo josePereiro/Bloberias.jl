@@ -53,3 +53,18 @@ function dat_framepath(bb::BlobBatch, frame)
     isempty(dir) && return ""
     return _dat_framepath(dir, frame)
 end
+
+## --.--. - .-. .- .--.-.- .- .---- ... . .-.-.-.- 
+import Base.isdir
+Base.isdir(bb::BlobBatch) = isdir(batchpath(bb))
+
+import Base.filesize
+function Base.filesize(bb::BlobBatch)
+    fsize = 0.0;
+    for fn in readdir(batchpath(bb); join = true)
+        isfile(fn) || continue
+        endswith(basename(fn), ".jls") || continue
+        fsize += filesize(fn)
+    end
+    return fsize
+end
