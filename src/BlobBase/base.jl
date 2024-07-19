@@ -37,6 +37,9 @@ end
 getframe!(b::Blob) = getframe!(b, BLOBBATCH_DEFAULT_FRAME_NAME)
 
 ## --.--. - .-. .- .--.-.- .- .---- ... . .-.-.-.- 
+hasframe(b::Blob, frame::String) = hasframe(b.batch, frame)
+
+## --.--. - .-. .- .--.-.- .- .---- ... . .-.-.-.- 
 # getindex
 import Base.getindex
 Base.getindex(b::Blob, frame::AbstractString, key) = getindex(getframe(b, frame), key)
@@ -50,7 +53,6 @@ function Base.getindex(b::Blob, framev::Vector) # get frame interface b[["bla"]]
 end
 
 # setindex
-# work on RAM, see commit to sync with batch
 function Base.setindex!(b::Blob, value, frame::AbstractString, key)
     frame == :temp && return setindex!(b.temp, value, key)
     # add frame if required
@@ -60,12 +62,58 @@ end
 Base.setindex!(b::Blob, value, key) = 
     setindex!(b, value, BLOBBATCH_DEFAULT_FRAME_NAME, key)
 
+import Base.get
+function Base.get(dflt::Function, b::Blob, frame::AbstractString, key)
+    frame == "temp" && return get(dflt, b.temp, key)
+    _ondemand_loaddat!(b.batch, frame) # loaded on batch
+    haskey(b.batch.frames, frame) || return dflt()
+    _bb_frame = b.batch.frames[frame]
+    haskey(_bb_frame, b.uuid) || return dflt()
+    _b_frame = _bb_frame[b.uuid]
+    return get(dflt, _b_frame, key)
+end
+Base.get(dflt::Function, b::Blob, key) = get(dflt, b, BLOBBATCH_DEFAULT_FRAME_NAME, key)
+Base.get(b::Blob, key, frame::AbstractString, dflt) = get(()-> dflt, b, frame, key)
+Base.get(b::Blob, key, dflt) = get(b, BLOBBATCH_DEFAULT_FRAME_NAME, key, dflt)
+
+import Base.get!
+function Base.get!(dflt::Function, b::Blob, frame::AbstractString, key)
+    frame == "temp" && return get!(dflt, b.temp, key)
+    _ondemand_loaddat!(b.batch, frame) # loaded on batch
+    _bb_frame = get!(OrderedDict, b.batch.frames, frame)
+    _b_frame = get!(OrderedDict, _bb_frame, b.uuid)
+    return get!(dflt, _b_frame, key)
+end
+Base.get!(dflt::Function, b::Blob, key) = get!(dflt, b, BLOBBATCH_DEFAULT_FRAME_NAME, key)
+Base.get!(b::Blob, frame::AbstractString, key, dflt) = get!(()-> dflt, b, frame, key)
+Base.get!(b::Blob, key, dflt) = get!(b, BLOBBATCH_DEFAULT_FRAME_NAME, key, dflt)
+
+import Base.haskey
+function Base.haskey(b::Blob, frame::AbstractString, key)
+    frame == "temp" && return haskey(b.temp, key)
+    _ondemand_loaddat!(b.batch, frame) # loaded on batch
+    haskey(b.batch.frames, frame) || return false
+    _bb_frame = b.batch.frames[frame]
+    haskey(_bb_frame, b.uuid) || return false
+    _b_frame = _bb_frame[b.uuid]
+    return haskey(_b_frame, key)
+end
+Base.haskey(b::Blob, key) = haskey(b, BLOBBATCH_DEFAULT_FRAME_NAME, key)
+
+
+
 ## --.--. - .-. .- .--.-.- .- .---- ... . .-.-.-.- 
 # merge!
 import Base.merge!
-function Base.merge!(b::Blob, frame::String, dat)
+function Base.merge!(b::Blob, frame::String, dat; force = true, prefix = "")
     _b_frame = getframe!(b, frame)
-    merge!(_b_frame, dat)
+    for (k, v) in dat
+        k = string(prefix, k)
+        # check overwrite
+        !force && haskey(_b_frame, k) && error("Overwrite is not allowed, use `force=true`")
+        _b_frame[k] = v
+    end
     return b
 end
-Base.merge!(b::Blob, dat) = merge!(b, BLOBBATCH_DEFAULT_FRAME_NAME, dat)
+Base.merge!(b::Blob, dat; force = true, prefix = "") = 
+    merge!(b, BLOBBATCH_DEFAULT_FRAME_NAME, dat; force, prefix)

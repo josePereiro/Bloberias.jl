@@ -2,18 +2,26 @@
 # returns a channel which iterates for all batches 
 # you can filter them
 # you can control the order
-function batches(B::Bloberia, group_pt = nothing; 
+function eachbatch(B::Bloberia, group_pt = nothing; 
         sortfun = identity, 
-        ch_size::Int = nthreads(), 
+        ch_size::Int = 1,
+        n_tasks::Int = nthreads(),
         preload = []
     )
     @assert ch_size > 0
-    return Channel{BlobBatch}(ch_size) do _ch
+    
+    # channel
+    file_ch = Channel{String}() do _ch
         paths = sortfun(readdir(B.root; join = true))
-        n = ceil(Int, length(paths) / ch_size)
-        ts = map(Iterators.partition(paths, n)) do t_paths
-            Threads.@spawn for path in t_paths
-                _isbatchdir(path) || continue
+        for path in paths
+            _isbatchdir(path) || continue
+            put!(_ch, path)
+        end
+    end
+
+    return Channel{BlobBatch}(ch_size) do _ch
+        @sync for _ in 1:n_tasks
+            @spawn for path in file_ch
                 group, uuid_str = _split_batchname(path)
                 uuid = parse(UInt128, uuid_str)
                 # filter
@@ -23,10 +31,9 @@ function batches(B::Bloberia, group_pt = nothing;
                 for frame in preload
                     _ondemand_loaddat!(bb, frame)
                 end
-                put!(_ch, bb) 
+                put!(_ch, bb)
             end
-        end
-        foreach(wait, ts)
+        end 
     end
 end
 
@@ -39,18 +46,71 @@ function foreach_batch(f::Function, B::Bloberia, group_pt = nothing;
         preload = [], 
         locked = false
     )
-    ret = nothing
-    bbs = batches(B, group_pt; sortfun, ch_size, preload)
+    bbs = eachbatch(B, group_pt; sortfun, ch_size, preload)
     for bb in bbs
-        try
-            locked && lock(bb)
+        if locked
+            try
+                locked && lock(bb)
+                ret = f(bb)
+                ret === :break && close(bb)
+            finally
+                locked && unlock(bb)
+            end
+        else
             ret = f(bb)
-            ret === :break && break
-        finally
-            locked && unlock(bb)
+            ret === :break && close(bb)
         end
     end
-    return ret
+    return nothing
+end
+
+## .-- .- -.-.-.--. ...---. . . . -- .--. -. -. -.
+function foreach_batch_th(f::Function, B::Bloberia, group_pt = nothing; 
+        sortfun = identity, 
+        n_tasks::Int = nthreads(), 
+        locked = false
+    )
+
+    # channel
+    ch = Channel{BlobBatch}() do _ch
+        paths = sortfun(readdir(B.root; join = true))
+        for path in paths
+            _isbatchdir(path) || continue
+            # group filter
+            group, uuid_str = _split_batchname(path)
+            uuid = parse(UInt128, uuid_str)
+            _ismatch(group_pt, group) || continue
+            bb = BlobBatch(B, group, uuid)
+            put!(_ch, bb)
+        end
+    end
+
+    # spawn
+    @sync for _ in 1:n_tasks
+        if locked
+            # ------------
+            @spawn begin
+                for bb in ch
+                    try
+                        lock(bb)
+                        ret = f(bb)
+                        ret === :break && close(ch)
+                    finally
+                        unlock(bb)
+                    end
+                end # for bb
+            end # @spawn
+        else
+            # ------------
+            @spawn begin
+                for bb in ch
+                    ret = f(bb)
+                    ret === :break && close(ch)
+                end # for bb
+            end # @spawn
+        end
+    end # for t
+    return nothing
 end
 
 ## --.--. - .-. .- .--.-.- .- .---- ... . .-.-.-.- 
@@ -64,7 +124,7 @@ end
 
 import Base.iterate
 function Base.iterate(B::Bloberia)
-    ch = batches(B)
+    ch = eachbatch(B)
     ch_next = iterate(ch)
     return _B_iterate_next(ch, ch_next)
 end

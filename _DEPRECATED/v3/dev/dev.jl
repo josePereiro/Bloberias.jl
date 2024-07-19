@@ -42,8 +42,7 @@ let
         # @show ep_frame
         # @show bb.meta
         # @show bb.lite
-        # for bid in bb # load bb's ids.jls frame and iterate it
-        #     b = blob(bb, bid) # get Blob named bid
+        # for b in bb # load bb's ids.jls frame and iterate it
         #     @show b["i"] # get "i" from "0" (default) lite frame (load frame if required (?))
         #     @show b["kaka"] # get "kaka" from "0" (default) non-lite frame (load frame if required (?))
         #     @show b["EP.v1", "epm"] # get "epm" from "EP.v1" non-lite frame (load frame if required (?))
@@ -60,7 +59,7 @@ end
 ## .-- . -. - .--..- -- .- - --..-.-.- .- -.--
 let
     B = Bloberia()
-    bbs = batches(B, "global") # iterator per 'global' batches
+    bbs = eachbatch(B, "global") # iterator per 'global' batches
     # collect(bbs, "EP.v1", "epm") # collect all epm's found at 
 end
 ## .-- . -. - .--..- -- .- - --..-.-.- .- -.--

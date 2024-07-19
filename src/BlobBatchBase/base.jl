@@ -24,7 +24,9 @@ import Base.show
 function Base.show(io::IO, bb::BlobBatch)
     _ondemand_loaduuids!(bb)
     print(io, "BlobBatch(", repr(bb.uuid), ") with ", length(bb.uuids), " blob(s)...")
-    
+    if _hasfilesys(bb)
+        print(io, "\nfilesys: ", basename(batchpath(bb)))
+    end
     if !isempty(bb.frames)
         print(io, "\nRam frames: ")
         for (frame, _bb_frame) in bb.frames
@@ -97,7 +99,6 @@ function Base.getindex(bb::BlobBatch, framev::Vector) # get frame interface b[["
     return getframe(bb, first(framev))
 end
 
-
 # isempty
 function Base.isempty(bb::BlobBatch)
     _ondemand_loaduuids!(bb)
@@ -130,17 +131,4 @@ function hasframe(bb::BlobBatch, frame)
     hasframe_disk(bb, frame) && return true
     return false
 end
-
-## --.--. - .-. .- .--.-.- .- .---- ... . .-.-.-.- 
-# Iterator
-import Base.iterate
-function Base.iterate(bb::BlobBatch)
-    _ondemand_loaduuids!(bb)
-    return iterate(bb.uuids)
-end
-
-Base.iterate(bb::BlobBatch, state) = iterate(bb.uuids, state)
-
-import Base.length
-Base.length(bb::BlobBatch) = blobcount(bb)
 

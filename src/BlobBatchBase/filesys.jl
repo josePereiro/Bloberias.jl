@@ -68,3 +68,6 @@ function Base.filesize(bb::BlobBatch)
     end
     return fsize
 end
+
+import Base.rm
+Base.rm(bb; force = true) = rm(batchpath(bb); force, recursive = true)

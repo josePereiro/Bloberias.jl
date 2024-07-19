@@ -28,8 +28,7 @@ end
 let
     B = Bloberia()
     for bb in B # iterate fot all BlobBatches
-        for bid in bb # load bb's ids.jls frame and iterate it
-            b = Blob(bb, bid) # get Blob named bid
+        for b in bb # load bb's ids.jls frame and iterate it
             @show b["i"] # get "i" from "0" (default) lite frame (load frame if required)
             @show b["kaka"] # get "kaka" from "0" (default) non-lite frame (load frame if required)
             @show b["EP.v1", "epm"] # get "epm" from "EP.v1" non-lite frame (load frame if required)

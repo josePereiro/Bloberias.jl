@@ -13,7 +13,9 @@ macro litescope()
     return quote
         local _scope = @scope
         filter!(_scope) do p
-            islite(last(p))
+            islite(last(p)) || return false
+            startswith(string(first(p)), "_") && return false
+            return true
         end
         _scope
     end

@@ -25,6 +25,7 @@ module Bloberias
     include("BloberiaBase/base.jl")
     include("BloberiaBase/blobbatch.jl")
     include("BloberiaBase/iterator.jl")
+    include("BloberiaBase/filesys.jl")
     include("BloberiaBase/lock.jl")
 
     #! include BlobBase
@@ -32,6 +33,7 @@ module Bloberias
     
     #! include BlobBatchBase
     include("BlobBatchBase/base.jl")
+    include("BlobBatchBase/iterator.jl")
     include("BlobBatchBase/blob.jl")
     include("BlobBatchBase/filesys.jl")
     include("BlobBatchBase/loading.jl")

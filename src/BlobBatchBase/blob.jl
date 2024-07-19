@@ -13,3 +13,4 @@ function blobcount(bb::BlobBatch)
     _ondemand_loaduuids!(bb)
     return length(bb.uuids)
 end
+
