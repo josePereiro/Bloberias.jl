@@ -49,12 +49,10 @@ function foreach_batch(f::Function, B::Bloberia, group_pt = nothing;
     bbs = eachbatch(B, group_pt; sortfun, ch_size, preload)
     for bb in bbs
         if locked
-            try
-                locked && lock(bb)
+            try; lock(bb)
                 ret = f(bb)
                 ret === :break && close(bb)
-            finally
-                locked && unlock(bb)
+                finally; unlock(bb)
             end
         else
             ret = f(bb)
@@ -91,12 +89,10 @@ function foreach_batch_th(f::Function, B::Bloberia, group_pt = nothing;
             # ------------
             @spawn begin
                 for bb in ch
-                    try
-                        lock(bb)
+                    try; lock(bb)
                         ret = f(bb)
                         ret === :break && close(ch)
-                    finally
-                        unlock(bb)
+                    finally; unlock(bb)
                     end
                 end # for bb
             end # @spawn

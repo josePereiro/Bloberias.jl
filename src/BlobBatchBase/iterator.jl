@@ -1,6 +1,6 @@
 ## --.--. - .-. .- .--.-.- .- .---- ... . .-.-.-.- 
 function eachblob(bb::BlobBatch)
-    return Channel{Blob}(0) do _ch
+    return Channel{btBlob}(0) do _ch
         _ondemand_loaduuids!(bb)
         for uuid in bb.uuids
             b = blob(bb, uuid)

@@ -22,11 +22,16 @@ end
 
 import Base.show
 function Base.show(io::IO, bb::BlobBatch)
-    _ondemand_loaduuids!(bb)
-    print(io, "BlobBatch(", repr(bb.uuid), ") with ", length(bb.uuids), " blob(s)...")
-    if _hasfilesys(bb)
-        print(io, "\nfilesys: ", basename(batchpath(bb)))
-    end
+    print(io, "BlobBatch(", repr(bb.uuid), ")")
+    _hasfilesys(bb) || return
+    _pretty_print_pairs(io, 
+        "\n filesys", 
+        basename(batchpath(bb))
+    )
+    _pretty_print_pairs(io, 
+        "\n blob(s)", 
+        blobcount(bb)
+    )
     if !isempty(bb.frames)
         print(io, "\nRam frames: ")
         for (frame, _bb_frame) in bb.frames
@@ -87,16 +92,14 @@ end
 getframe(bb::BlobBatch) = getframe(bb, BLOBERIA_DEFAULT_FRAME_NAME)
 
 import Base.getindex
-Base.getindex(bb::BlobBatch, i::UInt128) = blob(bb, i)
-function Base.getindex(bb::BlobBatch, i::Int)
-    _ondemand_loaduuids!(bb)
-    blob(bb, bb.uuids[i])
-end
-# TODO: think about it
+Base.getindex(bb::BlobBatch, uuid::UInt128) = blob(bb, uuid) 
+Base.getindex(bb::BlobBatch, i::Int) = blob(bb, i)
+
+# get frame 
 function Base.getindex(bb::BlobBatch, framev::Vector) # get frame interface b[["bla"]]
-    isempty(framev) && return getframe(bb)
+    isempty(framev) && return getframe(bb) # default frame
     @assert length(framev) == 1
-    return getframe(bb, first(framev))
+    return getframe(bb, first(framev)) # custom frame
 end
 
 # isempty
@@ -132,3 +135,7 @@ function hasframe(bb::BlobBatch, frame)
     return false
 end
 
+# Check that the batch has as much blobs as configured
+# function isfull(bb::BlobBatch)
+#     "blobs.count"
+# end

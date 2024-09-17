@@ -1,5 +1,13 @@
-uuid_int() = uuid4().value
-uuid_str() = repr(uuid4().value)
+uuid_one() = UInt128(1)
+# uuid_int() = uuid4().value
+function uuid_int()
+    _1 = uuid_one()
+    while true
+        _u = uuid4().value
+        _u != _1 && return _u
+    end
+end
+uuid_str() = repr(uuid_int())
 
 _noop(x...) = nothing
 
@@ -18,6 +26,11 @@ _ismatch(y, r::Regex) = _ismatch(r, y)
 _ismatch(x, y) = isequal(x, y)
 _ismatch(x) = Base.Fix1(_ismatch, x)
 _ismatch(::Nothing, y) = true  # pass
+
+function _mkpath(path)
+    dir = dirname(path)
+    isdir(dir) || mkpath(dir)
+end
 
 function _serialize(path::AbstractString, value; onerr = rethrow)
     try; serialize(path, value)
@@ -54,4 +67,9 @@ function _canonical_bytes(bytes)
     bytes < 1024 && return (bytes, "Gigabytes")
     bytes /= 1024
     return (bytes, "Tb")
+end
+
+function _pretty_print_pairs(io::IO, k, v)
+    print(io, string(k), ": ")
+    printstyled(io, string(v); color = :blue)
 end

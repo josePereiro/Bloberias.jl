@@ -24,18 +24,24 @@ module Bloberias
     #! include BloberiaBase
     include("BloberiaBase/base.jl")
     include("BloberiaBase/blobbatch.jl")
-    include("BloberiaBase/iterator.jl")
     include("BloberiaBase/filesys.jl")
+    include("BloberiaBase/iterator.jl")
+    include("BloberiaBase/loading.jl")
     include("BloberiaBase/lock.jl")
+    include("BloberiaBase/rablob.jl")
+    include("BloberiaBase/serialize.jl")
 
-    #! include BlobBase
-    include("BlobBase/base.jl")
+    #! include btBlobBase
+    include("btBlobBase/base.jl")
+    
+    #! include raBlobBase
+    include("raBlobBase/base.jl")
     
     #! include BlobBatchBase
     include("BlobBatchBase/base.jl")
-    include("BlobBatchBase/iterator.jl")
-    include("BlobBatchBase/blob.jl")
+    include("BlobBatchBase/btblob.jl")
     include("BlobBatchBase/filesys.jl")
+    include("BlobBatchBase/iterator.jl")
     include("BlobBatchBase/loading.jl")
     include("BlobBatchBase/lock.jl")
     include("BlobBatchBase/serialize.jl")

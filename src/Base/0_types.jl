@@ -1,14 +1,23 @@
 ## .-- . -. - .--..- -- .- - --..-.-.- .- -.--
 # frames
 # |-- meta.jls 
+# | # random access blobs
+# interface B["string.idx"]
+# The frame will have a fix name
+# |-- rablob...<h=0x0001>
+# | # batch accessed blobs
 # |-- 0...<h=0x234g>
 # |-- 0...<h=0xf550> 
 # |-- 0...<h=0xa58d> 
-# |-- globals...<h=0xa58d> 
+# |-- custom_group...<h=0xa58d> 
 # .
 mutable struct Bloberia
     root::String
-    meta::OrderedDict   # Persistants
+    meta::OrderedDict   # Persistants blob
+    
+    rablob_id::String  # loaded random access file
+    rablob::OrderedDict  # loaded random access blob
+
     temp::OrderedDict   # RAM only
 end
 
@@ -34,7 +43,7 @@ end
 mutable struct BlobBatch
     B::Bloberia                          # Parent folder
     group::String                        # Batch group (defaul "0")
-    uuid::UInt128                         # use UUIDs.uuid4().value
+    uuid::UInt128                        # use UUIDs.uuid4().value
     # disk
     meta::OrderedDict{String, Any}       # config/state/meta in general
     uuids::OrderedSet{UInt128}           # defines which blobs are present
@@ -44,25 +53,32 @@ mutable struct BlobBatch
 end
 
 ## .-- . -. - .--..- -- .- - --..-.-.- .- -.--
-# Blob
+# btBlob (a blob in a batch)
 # dat [dat/frame/key]
 #  |-- "0" 
 #       |-- "A" => 1
 
-mutable struct Blob
-    batch::BlobBatch       # 
-    uuid::UInt128          # use UUIDs.uuid4().value
-    temp::OrderedDict      # RAM only
+struct btBlob
+    batch::BlobBatch       # owner batch
+    uuid::UInt128          # unique universal id
 end
 
 ## --.--. - .-. .- .--.-.- .- .---- ... . .-.-.-.- 
+# raBlob (random access blob)
+struct raBlob
+    B::Bloberia            # owner batch
+    id::String             # user defined id
+end
+
+
+
 
 ## --.--. - .-. .- .--.-.- .- .---- ... . .-.-.-.- 
 ## --.--. - .-. .- .--.-.- .- .---- ... . .-.-.-.- 
 ## --.--. - .-. .- .--.-.- .- .---- ... . .-.-.-.- 
 
 # ## --.--. - .-. .- .--.-.- .- .---- ... . .-.-.-.- 
-# # A Blob is just a Dict like structures.... 
+# # A btBlob is just a Dict like structures.... 
 # # Layout
 # # dat
 # # |-- "lite"
@@ -73,7 +89,7 @@ end
 # # |    |-- "0" 
 # # |         |-- "B" => [1,2,3,4,5]
 # # .
-# struct Blob
+# struct btBlob
 #     group::Ref{String}    # currently active group
 #     dat::OrderedDict{String, OrderedDict{String, OrderedDict{String, Any}}}
 # end
@@ -81,14 +97,14 @@ end
 # ## --.--. - .-. .- .--.-.- .- .---- ... . .-.-.-.- 
 # # IDEAS
 # # Empty lites are not allowed
-# # Blob unmutability:
+# # btBlob unmutability:
 # # - Blobs can not add frames, only BlobBatches/Bloberia
-# # - There are two Blob edit modes: 
+# # - There are two btBlob edit modes: 
 # # -- push! (Bloberia): the blob is new
 # # -- edit! (Batch iteration): the blob is already in a Blatch
-# # - Maybe we need an iter frame, which only contain the Blob keys.
+# # - Maybe we need an iter frame, which only contain the btBlob keys.
 # # - getindex/setindex! interface should always refer to blobs. 
-# # -- at (g)setindex(::Blob)
+# # -- at (g)setindex(::btBlob)
 # # -- (g)setindex(b::Bloberia) = (g)setindex(b.blob)
 # # - lite is a reserved frame.
 # # - Add load interface, load(bb, "meta", "lite", "EP.v1")
@@ -142,7 +158,7 @@ end
 #     # path
 #     root::String                     # path on disk
 #     # stage
-#     blob::Ref{Blob}                  # head blob
+#     blob::Ref{btBlob}                  # head blob
 #     batch::Ref{BlobBatch}            # head batch
 #     # meta
 #     meta::OrderedDict{String, Any}   # ondisk config/state/stats/etc...

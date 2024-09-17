@@ -1,51 +1,56 @@
 ## --.--. - .-. .- .--.-.- .- .---- ... . .-.-.-.- 
+const BLOBERIA_DEFAULT_RABLOB_ID = "0"
 const BLOBERIA_DEFAULT_BATCH_GROUP = "0"
 const BLOBERIA_DEFAULT_FRAME_NAME = "0"
 
 ## --.--. - .-. .- .--.-.- .- .---- ... . .-.-.-.- 
 # Constructor
-Bloberia(root) = Bloberia(root, OrderedDict(), OrderedDict())
+Bloberia(root) = Bloberia(root, OrderedDict(), "", OrderedDict(), OrderedDict())
 Bloberia() = Bloberia("")
 
 ## --.--. - .-. .- .--.-.- .- .---- ... . .-.-.-.- 
 import Base.show
 function Base.show(io::IO, B::Bloberia)
-    if _hasfilesys(B)
-        print(io, "Bloberia with ", batchcount(B), " batch(es), ", blobcount(B), " blob(s)")
-        print(io, "\nfilesys: ", B.root)
-        val, unit = _canonical_bytes(filesize(B))
-        print(io, "\ndisk usage: ", round(val; digits = 3), " ", unit)
-    else
-        print(io, "Bloberia: filesys not found...")
-    end
+    print(io, "Bloberia")
+    _sidir = isdir(B.root)
+    _pretty_print_pairs(io, 
+        "\n filesys", 
+        _hasfilesys(B) ? B.root : ""
+    )
+    _pretty_print_pairs(io, 
+        "\n batch(es)", 
+        _sidir ? batchcount(B) : 0
+    )
+    _pretty_print_pairs(io, 
+        "\n blob(s)", 
+        _sidir ? blobcount(B) : 0
+    )
+    val, unit = _sidir ? _canonical_bytes(filesize(B)) : (0.0, "bytes")
+    _pretty_print_pairs(io, 
+        "\n disk usage", 
+        _sidir ? string(round(val; digits = 3), " ", unit) : 0.0
+    )
 end
 
 ## --.--. - .-. .- .--.-.- .- .---- ... . .-.-.-.- 
 import Base.getindex
 # uuid indexing
-function Base.getindex(B::Bloberia, uuid0::UInt128)
-    for bb in B
-        bb.uuid == uuid0 && return bb
-    end
-    error("Batch not found, uuid: ", repr(uuid0))
-end
+
+# TODO: think abount a batchs.jls for tracking existing batches
+Base.getindex(B::Bloberia, uuid0::UInt128) = blobbatch(B, uuid0) # existing batch
 
 # order indexing
 # WARNING: order is not controlled
-function Base.getindex(B::Bloberia, idx::Integer)
-    @assert idx > 0
-    batchcount = 0
-    for (i, bb) in enumerate(B)
-        i == idx && return bb
-        batchcount += 1
-    end
-    @assert idx <= batchcount
-end
+Base.getindex(B::Bloberia, idx::Integer) = blobbatch(B, idx) # existing batch
+    
 # collect fallback
 function Base.getindex(B::Bloberia, idx)
     bbs = collect(eachbatch(B))
     return bbs[idx]
 end
+
+Base.getindex(B::Bloberia, key::String) = rablob(B, key) # random access blob
+Base.getindex(B::Bloberia) = rablob!(B, BLOBERIA_DEFAULT_RABLOB_ID) # random access blob!
 
 ## --.--. - .-. .- .--.-.- .- .---- ... . .-.-.-.- 
 # Use, uuids

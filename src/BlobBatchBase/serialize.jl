@@ -107,10 +107,11 @@ function _inline_newbatch!(bb::BlobBatch)
     nothing
 end
 
-function rollserialize!(bb::BlobBatch, lim = BLOBBATCHES_DEFAULT_SIZE_LIM)
-    count = blobcount(bb)
-    count < lim && return false
-    serialize(bb)
-    _inline_newbatch!(bb)
-    return true
-end
+# TODO: sync with "meta" limit config
+# function rollserialize!(bb::BlobBatch, lim = BLOBBATCHES_DEFAULT_SIZE_LIM)
+#     count = blobcount(bb)
+#     count < lim && return false
+#     serialize(bb)
+#     _inline_newbatch!(bb)
+#     return true
+# end

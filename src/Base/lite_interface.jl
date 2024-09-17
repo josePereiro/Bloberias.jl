@@ -9,9 +9,9 @@ islite(::VersionNumber) = true
 islite(::Nothing) = true
 islite(s::AbstractString) = length(s) < 256
 
-macro litescope()
+macro litescope(prefix="")
     return quote
-        local _scope = @scope
+        local _scope = @scope($(prefix))
         filter!(_scope) do p
             islite(last(p)) || return false
             startswith(string(first(p)), "_") && return false
