@@ -1,7 +1,7 @@
 ## --.--. - .-. .- .--.-.- .- .---- ... . .-.-.-.- 
 # Constructor
-raBlob(B::Bloberia, id) = raBlob(B, id)
-raBlob(B::Bloberia) = raBlob(B, BLOBERIA_DEFAULT_RABLOB_ID)
+raBlob(B::Bloberia, id) = raBlob(B, id, OrderedDict())
+raBlob(B::Bloberia) = raBlob(B, BLOBERIA_DEFAULT_RABLOB_ID, OrderedDict())
 
 ## --.--. - .-. .- .--.-.- .- .---- ... . .-.-.-.- 
 import Base.show
@@ -20,8 +20,8 @@ end
 ## --.--. - .-. .- .--.-.- .- .---- ... . .-.-.-.- 
 # getindex
 function _rablob_dict!(b::raBlob)::OrderedDict
-    _ondemand_loadrablob!(b.B, b.id)
-    return b.B.rablob
+    _ondemand_loadrablob!(b)
+    return b.data
 end
 
 import Base.getindex

@@ -1,5 +1,7 @@
+# TODO: Move to ProjFlows?
+
 # -- .- .-- -. . ---- .- .- . -.. - -- -.. --- -...
-# Potential names: localctx, peekctx,
+# Alternative names: localctx, peekctx,
 macro scope(prefix="")
     return quote
         local _mod = @__MODULE__

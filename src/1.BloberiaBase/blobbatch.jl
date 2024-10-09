@@ -25,27 +25,25 @@ end
 ## --.--. - .-. .- .--.-.- .- .---- ... . .-.-.-.- 
 # look for non full batch
 # or give a new one
-function headbatch!(B::Bloberia, group::AbstractString = BLOBERIA_DEFAULT_BATCH_GROUP)::BlobBatch
-    # no filesys, return new Batch
-    isdir(B.root) || return BlobBatch(B, group)
+function headbatch!(B::Bloberia, group::AbstractString)::BlobBatch
     # find head
-    bb = BlobBatch(B, group) 
+    bb = nothing
     foreach_batch(B, group) do _bb
-        _force_loadmeta!(_bb)
-        count = blobcount(_bb)
-        lim = get(_bb.meta, "blobs.lim", BLOBBATCHES_DEFAULT_SIZE_LIM)
-        count < lim  || return :continue
+        isfullbatch(_bb) && return :continue
         bb = _bb
         return :break
     end
-    return bb
+    return isnothing(bb) ? blobbatch!(B, group) : bb
 end
+headbatch!(B::Bloberia) = headbatch!(B, BLOBERIA_DEFAULT_BATCH_GROUP)
+
 
 ## --.--. - .-. .- .--.-.- .- .---- ... . .-.-.-.- 
 function batchcount(B::Bloberia)
     count = 0
-    isdir(B.root) || return count
-    for path in readdir(B.root; join = true)
+    bb_root = blobbatches_dir(B)
+    isdir(bb_root) || return count
+    for path in readdir(bb_root; join = true)
         _isbatchdir(path) || continue
         count += 1
     end

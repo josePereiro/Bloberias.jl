@@ -1,0 +1,1 @@
+rablob_framepath(rb::raBlob) = joinpath(rablobs_dir(rb.B), string(rb.id, ".jls"))

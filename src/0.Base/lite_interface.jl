@@ -1,3 +1,4 @@
+# TODO: Move to ProjFlows?
 # This interface determine if an object is lite or not
 # overwrite to change definition
 

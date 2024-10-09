@@ -7,25 +7,25 @@ function onserialize!(bb::BlobBatch, args...)
 end
 
 ## --.--. - .-. .- .--.-.- .- .---- ... . .-.-.-.- 
-function _serialize_uuids(bb)
+function _serialize_uuids(bb::BlobBatch)
     path = uuids_framepath(bb)
     _serialize(path, bb.uuids)
 end
 
-function _serialize_meta(bb)
+function _serialize_meta(bb::BlobBatch)
     path = meta_framepath(bb)
     _serialize(path, bb.meta)
 end
 
 
-function _serialize_datframe(bb, frame)
+function _serialize_datframe(bb::BlobBatch, frame)
     path = dat_framepath(bb, frame)
     _serialize(path, bb.frames[frame])
 end
 
 ## --.--. - .-. .- .--.-.- .- .---- ... . .-.-.-.- 
 import Serialization.serialize
-function Serialization.serialize(bb::BlobBatch; ignoreempty = true)
+function Serialization.serialize(bb::BlobBatch; ignoreempty = false)
     
     ignore = ignoreempty && isempty(bb)
     ignore && return bb
@@ -33,7 +33,6 @@ function Serialization.serialize(bb::BlobBatch; ignoreempty = true)
     onserialize!(bb)
 
     dir = batchpath(bb)
-    isempty(dir) && return # noop
     mkpath(dir)
     
     # meta
@@ -104,7 +103,7 @@ function _inline_newbatch!(bb::BlobBatch)
 end
 
 # TODO: sync with "meta" limit config
-# function rollserialize!(bb::BlobBatch, lim = BLOBBATCHES_DEFAULT_SIZE_LIM)
+# function rollserialize!(bb::BlobBatch, lim = typemax(Inf))
 #     count = blobcount(bb)
 #     count < lim && return false
 #     serialize(bb)

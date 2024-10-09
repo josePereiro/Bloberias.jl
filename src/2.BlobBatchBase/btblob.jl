@@ -18,12 +18,13 @@ function blob(bb::BlobBatch, uuid::UInt128)
     return btBlob(bb, uuid)
 end
 
-function blob!(bb::BlobBatch, uuid = uuid_int())
+function blob!(bb::BlobBatch, uuid)
     _ondemand_loaduuids!(bb)
     b = btBlob(bb, uuid)
     push!(bb.uuids, uuid)
     return b
 end
+blob!(bb::BlobBatch) = blob!(bb, uuid_int())
 
 ## --.--. - .-. .- .--.-.- .- .---- ... . .-.-.-.- 
 # Use, uuids # RAM STATE

@@ -1,19 +1,19 @@
 # random blobs
 
-# create 
-
-# return blob if exist in RAM or DISK
+# return blob if exist in DISK
 function blob(B::Bloberia, id::String)
-    B.rablob_id == id && return raBlob(B, id)
-    path = rablob_framepath(B, id)
+    rb = raBlob(B, id)
+    path = rablob_framepath(rb)
     isfile(path) || error("raBlob(\"", id, "\") not found.")
-    return raBlob(B, id)
+    return rb
 end
+blob(B::Bloberia) = blob(B, BLOBERIA_DEFAULT_RABLOB_ID)
 
 # existing or new blob
 # in practice an unchecked blob
 function blob!(B::Bloberia, id::String)
-    _ondemand_loadrablob!(B, id)
-    return raBlob(B, id)
+    rb = raBlob(B, id)
+    _ondemand_loadrablob!(rb)
+    return rb
 end
 blob!(B::Bloberia) = blob!(B, BLOBERIA_DEFAULT_RABLOB_ID)
