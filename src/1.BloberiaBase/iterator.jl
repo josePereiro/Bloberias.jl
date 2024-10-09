@@ -142,6 +142,7 @@ function _foreach_batch_th(f::Function, B::Bloberia, group_pt = nothing;
     return nothing
 end
 
+# the execution of `f()` is in concurrent if n_tasks > 1
 function foreach_batch(f::Function, B::Bloberia, group_pt = nothing; 
         sortfun = identity, 
         ch_size::Int = nthreads(), 
@@ -150,7 +151,7 @@ function foreach_batch(f::Function, B::Bloberia, group_pt = nothing;
         locked = false
     )
     if n_tasks > 1
-        _foreach_batch_th(f, B, group_pt; sortfun, ch_size, n_tasks, locked)
+        _foreach_batch_th(f, B, group_pt; sortfun, ch_size, n_tasks, preload, locked)
     else
         _foreach_batch_ser(f, B, group_pt; sortfun, ch_size, preload, locked)
     end
