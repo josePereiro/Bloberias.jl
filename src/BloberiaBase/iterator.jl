@@ -56,7 +56,7 @@ function foreach_batch(f::Function, B::Bloberia, group_pt = nothing;
             end
         else
             ret = f(bb)
-            ret === :break && close(bb)
+            ret === :break && close(bbs)
         end
     end
     return nothing

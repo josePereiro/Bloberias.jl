@@ -1,11 +1,7 @@
 ## --.--. - .-. .- .--.-.- .- .---- ... . .-.-.-.- 
 # TODO: make an interface for this so more routines can be added
 function onserialize!(bb::BlobBatch, args...)
-    _ondemand_loadmeta!(bb)
-    meta = bb.meta
-    if !isempty(bb.uuids)
-        meta["blobs.count"] = length(bb.uuids)
-    end
+    meta = getframe(bb, "meta")
     meta["serialization.time"] = time()
     return nothing
 end

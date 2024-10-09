@@ -4,6 +4,8 @@ using Test
 
 @testset "Bloberias.jl" begin
     
+    # TODO: update tests
+
     ## .-- . -. - .--..- -- .- - --..-.-.- .- -.--
     let 
         B_ROOT = joinpath(@__DIR__, "db")
@@ -34,7 +36,7 @@ using Test
             end
 
             # RandomAccessBlobs
-            b = rablob!(B)
+            b = blob!(B)
             b["msg"] = "HELLO"
             serialize(B)
 

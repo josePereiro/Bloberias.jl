@@ -6,7 +6,6 @@ function _getindex(os::OrderedSet, i0)
     throw(BoundsError(s, i))
 end
 
-
 # get an existing blob
 function blob(bb::BlobBatch, i::Integer)
     _ondemand_loaduuids!(bb)
@@ -15,7 +14,7 @@ end
 
 function blob(bb::BlobBatch, uuid::UInt128)
     _ondemand_loaduuids!(bb)
-    uuid ∈ bb.uuids && error("Uuid ", repr(uuid), " not present")
+    uuid ∈ bb.uuids || error("Uuid ", repr(uuid), " not present")
     return btBlob(bb, uuid)
 end
 
@@ -28,8 +27,4 @@ end
 
 ## --.--. - .-. .- .--.-.- .- .---- ... . .-.-.-.- 
 # Use, uuids # RAM STATE
-function blobcount(bb::BlobBatch)
-    _ondemand_loaduuids!(bb)
-    return length(bb.uuids)
-end
-
+blobcount(bb::BlobBatch) = length(getframe(bb, "uuids"))

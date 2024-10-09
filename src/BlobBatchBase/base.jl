@@ -135,7 +135,25 @@ function hasframe(bb::BlobBatch, frame)
     return false
 end
 
-# Check that the batch has as much blobs as configured
-# function isfull(bb::BlobBatch)
-#     "blobs.count"
+## --.--. - .-. .- .--.-.- .- .---- ... . .-.-.-.- 
+# meta interface
+_meta(bb::BlobBatch) = getframe(bb, "meta")
+
+## --.--. - .-. .- .--.-.- .- .---- ... . .-.-.-.- 
+# # Set the batch limit
+# function batchlim!(bb::BlobBatch, lim)
+#     m = getframe(bb, "meta")
+#     m["blobs.lim"] = lim
+#     return lim
 # end
+
+# function batchlim(bb::BlobBatch)
+#     m = getframe(bb, "meta")
+#     return get!(m, "blobs.lim", BLOBBATCHES_DEFAULT_SIZE_LIM)
+# end
+
+# Check that the batch has as much blobs as configured
+function isfullbatch(bb::BlobBatch) 
+    lim = getmeta!(bb, "blobs.lim", BLOBBATCHES_DEFAULT_SIZE_LIM)
+    return blobcount(bb) > lim
+end

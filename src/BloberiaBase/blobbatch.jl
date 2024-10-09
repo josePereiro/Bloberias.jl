@@ -32,7 +32,7 @@ function headbatch!(B::Bloberia, group::AbstractString = BLOBERIA_DEFAULT_BATCH_
     bb = BlobBatch(B, group) 
     foreach_batch(B, group) do _bb
         _force_loadmeta!(_bb)
-        count = get(_bb.meta, "blobs.count", 0)
+        count = blobcount(_bb)
         lim = get(_bb.meta, "blobs.lim", BLOBBATCHES_DEFAULT_SIZE_LIM)
         count < lim  || return :continue
         bb = _bb

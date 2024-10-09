@@ -18,19 +18,40 @@ function Base.show(io::IO, b::raBlob)
 end
 
 ## --.--. - .-. .- .--.-.- .- .---- ... . .-.-.-.- 
-## --.--. - .-. .- .--.-.- .- .---- ... . .-.-.-.- 
 # getindex
-import Base.getindex
-function Base.getindex(b::raBlob, key)
+function _rablob_dict!(b::raBlob)::OrderedDict
     _ondemand_loadrablob!(b.B, b.id)
-    return b.B.rablob[key]
+    return b.B.rablob
 end
 
+import Base.getindex
+Base.getindex(b::raBlob, key) = _rablob_dict!(b)[key]
+Base.getindex(b::raBlob, T::Type, key) = _rablob_dict!(b)[key]::T
+
 # setindex
-function Base.setindex!(b::raBlob, value, key)
-    _ondemand_loadrablob!(b.B, b.id)
-    return setindex!(b.B.rablob, value, key)
-end
+Base.setindex!(b::raBlob, value, key) = 
+    setindex!(_rablob_dict!(b), value, key)
+
+import Base.get
+Base.get(b::raBlob, key, default) = 
+    Base.get(_rablob_dict!(b), key, default)
+Base.get(f::Function, b::raBlob, key) = 
+    Base.get(f, _rablob_dict!(b), key)
+
+import Base.get!
+Base.get!(b::raBlob, key, default) = 
+    Base.get!(_rablob_dict!(b), key, default)
+Base.get!(f::Function, b::raBlob, key) = 
+    Base.get!(f, _rablob_dict!(b), key)
+
+import Base.keys
+Base.keys(b::raBlob) = keys(_rablob_dict!(b))
+
+import Base.values
+Base.values(b::raBlob) = keys(_rablob_dict!(b))
+
+import Base.haskey
+Base.haskey(b::raBlob, key) = keys(_rablob_dict!(b), key)
 
 # import Base.get
 # function Base.get(dflt::Function, b::raBlob, frame::AbstractString, key)

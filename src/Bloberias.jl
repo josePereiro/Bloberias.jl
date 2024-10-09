@@ -1,4 +1,8 @@
-# TODO: Change name to Bloberias
+# TODO:
+# - Make random blobs hold its content
+# - that is, move it away from Bloberias
+# - otherwise you can not load other rablobs at the same time
+# think about raBlob as a batch of a single blob, so it needs to have batch+blob functionality
 
 module Bloberias
 
@@ -18,6 +22,7 @@ module Bloberias
     include("Base/kv_interface.jl")
     include("Base/lite_interface.jl")
     include("Base/lock.jl")
+    include("Base/meta_interface.jl")
     include("Base/scope_interface.jl")
     include("Base/utils.jl")
     
@@ -33,9 +38,11 @@ module Bloberias
 
     #! include btBlobBase
     include("btBlobBase/base.jl")
+    include("btBlobBase/lock.jl")
     
     #! include raBlobBase
     include("raBlobBase/base.jl")
+    include("raBlobBase/lock.jl")
     
     #! include BlobBatchBase
     include("BlobBatchBase/base.jl")

@@ -3,7 +3,7 @@ function eachblob(bb::BlobBatch)
     return Channel{btBlob}(0) do _ch
         _ondemand_loaduuids!(bb)
         for uuid in bb.uuids
-            b = blob(bb, uuid)
+            b = btBlob(bb, uuid) # I do not need to check if blob exist
             put!(_ch, b)
         end
     end

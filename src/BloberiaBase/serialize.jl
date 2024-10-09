@@ -40,39 +40,3 @@ function Serialization.serialize(B::Bloberia; ignoreempty = true)
     return B
 end
 
-# ## --.--. - .-. .- .--.-.- .- .---- ... . .-.-.-.- 
-# import Serialization.serialize
-# function Serialization.serialize(bb::BlobBatch, frame::AbstractString; ignoreempty = true)
-    
-#     ignore = isempty(bb)
-#     ignore = ignore && ignoreempty 
-#     ignore && return bb
-    
-#     onserialize!(bb, frame)
-
-#     dir = batchpath(bb)
-#     isempty(dir) && return # noop
-#     mkpath(dir)
-    
-#     # meta
-#     if frame == "meta"
-#         ignore = isempty(bb.meta)
-#         ignore = ignore && ignoreempty 
-#         ignore || _serialize_meta(bb)
-#         return
-#     end
-    
-#     # uuids
-#     if frame == "uuids"
-#         ignore = isempty(bb.uuids)
-#         ignore = ignore && ignoreempty 
-#         ignore || _serialize_uuids(bb)
-#     end
-
-#     # frames
-#     ignore = isempty(bb.frames) | isempty(bb.frames[frame])
-#     ignore = ignore && ignoreempty 
-#     ignore || _serialize_datframe(bb, frame)
-
-#     return bb
-# end

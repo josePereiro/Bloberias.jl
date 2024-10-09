@@ -49,8 +49,9 @@ function Base.getindex(B::Bloberia, idx)
     return bbs[idx]
 end
 
-Base.getindex(B::Bloberia, key::String) = rablob(B, key) # random access blob
-Base.getindex(B::Bloberia) = rablob!(B, BLOBERIA_DEFAULT_RABLOB_ID) # random access blob!
+Base.getindex(B::Bloberia, key::String) = blob(B, key) # random access blob
+Base.getindex(B::Bloberia) = blob!(B, BLOBERIA_DEFAULT_RABLOB_ID) # random access blob!
+
 
 ## --.--. - .-. .- .--.-.- .- .---- ... . .-.-.-.- 
 # Use, uuids
@@ -62,3 +63,7 @@ function blobcount(B::Bloberia, group_pt = nothing)
     end
     return count
 end
+
+## --.--. - .-. .- .--.-.- .- .---- ... . .-.-.-.- 
+# meta interface
+_meta(B::Bloberia) = getframe(B, "meta")
