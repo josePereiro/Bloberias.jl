@@ -8,6 +8,7 @@ module Bloberias
 
     import Serialization
     
+    using MassExport
     using OrderedCollections
     using Dates
     using Serialization
@@ -61,8 +62,7 @@ module Bloberias
     include("4.raBlobBase/serialize.jl")
     
     #! include 99.Utils
-    include("99.Utils/exportall.jl")
     
-    @_exportall_words()
+    @exportall_words()
 
 end
