@@ -65,6 +65,28 @@ Base.get!(dflt::Function, b::btBlob, key) = get!(dflt, b, BLOBBATCH_DEFAULT_FRAM
 Base.get!(b::btBlob, frame::AbstractString, key, dflt) = get!(()-> dflt, b, frame, key)
 Base.get!(b::btBlob, key, dflt) = get!(b, BLOBBATCH_DEFAULT_FRAME_NAME, key, dflt)
 
+## --.--. - .-. .- .--.-.- .- .---- ... . .-.-.-.-
+# :set! :get :get! :dry 
+# all in ram
+function withblob!(f::Function, b::btBlob, mode::Symbol, frame, key::String)
+    if mode == :set!
+        return setindex!(b, f(), frame, key)
+    end
+    if mode == :get
+        return get(f, b, frame, key)
+    end
+    if mode == :get!
+        return get!(f, b, frame, key)
+    end
+    if mode == :dry
+        return f()
+    end
+    error("Unknown mode, ", mode, ". see withblob! src")
+end
+withblob!(f::Function, b::btBlob, mode::Symbol, key::String) = 
+    withblob!(f, b, mode, BLOBBATCH_DEFAULT_FRAME_NAME, key)
+
+
 import Base.haskey
 function Base.haskey(b::btBlob, frame::AbstractString, key)
     # frame == "temp" && return haskey(b.temp, key)

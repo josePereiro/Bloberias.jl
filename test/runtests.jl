@@ -15,6 +15,42 @@ using Test
         @show testi
 
         ## .-- . -. - .--..- -- .- - --..-.-.- .- -.--
+        # withblob! interface
+        let
+            B = Bloberia(B_ROOT)
+            rm(B.root; force = true, recursive = true)
+            bb = blobbatch!(B)
+            rb = blob!(B)
+            vb = blob!(bb)
+            
+            _dat0 = [1,2,3]
+            frame = string(hash(_dat0))
+            for b in [rb, vb]
+                withblob!(b, :get!, frame, "+1") do
+                    return _dat0 .+ 1
+                end
+                @test b[frame, "+1"] == _dat0 .+ 1
+                serialize(b)
+            end
+        
+            # check again but loaded
+            empty!(rb)
+            @test isempty(rb.frames)
+            _dat1 = withblob!(rb, :get!, frame, "+1") do
+                return "not to load"
+            end
+            @test _dat1 == _dat0 .+ 1
+            
+            empty!(bb)
+            @test isempty(bb.frames)
+            vb = blob(bb, 1) # first blob
+            _dat1 = withblob!(vb, :get!, frame, "+1") do
+                return "not to load"
+            end
+            @test _dat1 == _dat0 .+ 1
+        end
+
+        ## .-- . -. - .--..- -- .- - --..-.-.- .- -.--
         # blobbatches interface
         let
             B = Bloberia(B_ROOT)

@@ -6,6 +6,7 @@ _force_loadtemp!(::BlobBatch) = nothing
 function _force_loaduuids!(bb::BlobBatch)
     _frame_dat = _trydeserialize(uuids_framepath(bb))
     isnothing(_frame_dat) && return nothing
+    isempty(_frame_dat) && return nothing
     push!(bb.uuids, _frame_dat...)
     return nothing
 end

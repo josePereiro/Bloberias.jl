@@ -92,6 +92,16 @@ function Base.isempty(bb::BlobBatch)
     return isempty(bb.uuids)
 end
 
+# isempty
+import Base.empty!
+function Base.empty!(bb::BlobBatch)
+    empty!(bb.meta)
+    empty!(bb.uuids)
+    empty!(bb.temp)
+    empty!(bb.frames)
+    return nothing
+end
+
 ## --.--. - .-. .- .--.-.- .- .---- ... . .-.-.-.- 
 # Set the batch limit
 

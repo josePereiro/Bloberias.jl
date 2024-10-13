@@ -61,6 +61,7 @@ module Bloberias
     include("3.btBlobBase/base.jl")
     include("3.btBlobBase/getframe.jl")
     include("3.btBlobBase/lock.jl")
+    include("3.btBlobBase/serialize.jl")
     
     #! include 4.raBlobBase
     include("4.raBlobBase/base.jl")
