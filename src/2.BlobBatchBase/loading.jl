@@ -6,14 +6,14 @@ _force_loadtemp!(::BlobBatch) = nothing
 function _force_loaduuids!(bb::BlobBatch)
     _frame_dat = _trydeserialize(uuids_framepath(bb))
     isnothing(_frame_dat) && return nothing
-    bb.uuids = _frame_dat
+    push!(bb.uuids, _frame_dat...)
     return nothing
 end
 
 function _force_loadmeta!(bb::BlobBatch)
     _frame_dat = _trydeserialize(meta_framepath(bb))
     isnothing(_frame_dat) && return nothing
-    bb.meta = _frame_dat
+    merge!(bb.meta, _frame_dat)
     return nothing
 end
 

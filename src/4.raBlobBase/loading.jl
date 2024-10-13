@@ -4,7 +4,7 @@
 function _force_loadmeta!(rb::raBlob)
     _frame_dat = _trydeserialize(meta_framepath(rb))
     isnothing(_frame_dat) && return nothing
-    rb.meta = _frame_dat
+    merge!(rb.meta, _frame_dat)
     return nothing
 end
 

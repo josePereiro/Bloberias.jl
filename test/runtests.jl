@@ -102,9 +102,10 @@ using Test
         let
             B = Bloberia(B_ROOT)
             rm(B; force = true)
+            b = blob!(B)
             bb = blobbatch!(B)
             
-            for obj in [B, bb]
+            for obj in [B, b, bb]
                 println(typeof(obj))
                 
                 mfile = meta_framepath(obj)
