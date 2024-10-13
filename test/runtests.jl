@@ -33,7 +33,8 @@ using Test
                 serialize(b)
             end
         
-            # check again but loaded
+            # check again but from loading
+            # empty!
             empty!(rb)
             @test isempty(rb.frames)
             _dat1 = withblob!(rb, :get!, frame, "+1") do
@@ -42,6 +43,22 @@ using Test
             @test _dat1 == _dat0 .+ 1
             
             empty!(bb)
+            @test isempty(bb.frames)
+            vb = blob(bb, 1) # first blob
+            _dat1 = withblob!(vb, :get!, frame, "+1") do
+                return "not to load"
+            end
+            @test _dat1 == _dat0 .+ 1
+
+            # Shadow copy
+            rb = blob(rb) # shadow copy
+            @test isempty(rb.frames)
+            _dat1 = withblob!(rb, :get!, frame, "+1") do
+                return "not to load"
+            end
+            @test _dat1 == _dat0 .+ 1
+            
+            bb = blobbatch(bb) # shadow copy
             @test isempty(bb.frames)
             vb = blob(bb, 1) # first blob
             _dat1 = withblob!(vb, :get!, frame, "+1") do
@@ -165,5 +182,7 @@ using Test
         end
     
     end # for testi
+
+    rm(B_ROOT; force = true, recursive = true)
 
 end

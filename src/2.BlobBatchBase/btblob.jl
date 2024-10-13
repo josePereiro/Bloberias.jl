@@ -3,7 +3,7 @@ function _getindex(os::OrderedSet, i0)
     for (i, v) in enumerate(os)
         i == i0 && return v
     end
-    throw(BoundsError(s, i))
+    throw(BoundsError(os, i0))
 end
 
 # get an existing blob
@@ -18,7 +18,7 @@ function blob(bb::BlobBatch, uuid::UInt128)
     return btBlob(bb, uuid)
 end
 
-function blob!(bb::BlobBatch, uuid)
+function blob!(bb::BlobBatch, uuid::UInt128)
     _ondemand_loaduuids!(bb)
     b = btBlob(bb, uuid)
     push!(bb.uuids, uuid)

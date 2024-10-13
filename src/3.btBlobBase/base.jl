@@ -1,7 +1,7 @@
 ## --.--. - .-. .- .--.-.- .- .---- ... . .-.-.-.- 
 # Constructor
-btBlob(bb::BlobBatch, uuid) = btBlob(bb, uuid)
 btBlob(bb::BlobBatch) = btBlob(bb, uuid_int())
+# NOTE: no shadow copy, this is a dataless object
 
 ## --.--. - .-. .- .--.-.- .- .---- ... . .-.-.-.- 
 import Base.show

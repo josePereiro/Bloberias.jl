@@ -2,6 +2,9 @@
 # Constructor
 raBlob(B::Bloberia, id) = raBlob(B, id, OrderedDict(), OrderedDict(), OrderedDict())
 raBlob(B::Bloberia) = raBlob(B, BLOBERIA_DEFAULT_RABLOB_ID)
+raBlob(rb::raBlob) = raBlob(rb.B, rb.id) # shadow copy
+
+blob(rb::raBlob) = raBlob(rb)
 
 ## --.--. - .-. .- .--.-.- .- .---- ... . .-.-.-.- 
 import Base.show

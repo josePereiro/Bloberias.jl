@@ -2,12 +2,17 @@
 # Constructor
 const BLOBBATCH_DEFAULT_FRAME_NAME = "0"
 
-BlobBatch(B::Bloberia, group::AbstractString, uuid) = BlobBatch(B, group, uuid,
+BlobBatch(B::Bloberia, group::AbstractString, uuid::UInt128) = BlobBatch(B, group, uuid,
     OrderedDict(), OrderedSet{Int128}(), OrderedDict(), 
     OrderedDict()
 )
 BlobBatch(B::Bloberia, group::AbstractString) = BlobBatch(B, group, uuid_int())
 BlobBatch(B::Bloberia) = BlobBatch(B, BLOBBATCH_DEFAULT_FRAME_NAME, uuid_int())
+BlobBatch(bb::BlobBatch) = BlobBatch(bb.B, bb.group, bb.uuid) # Shadow price
+
+## --.--. - .-. .- .--.-.- .- .---- ... . .-.-.-.- 
+blobbatch(bb::BlobBatch) = BlobBatch(bb) # Shadow copy
+
 
 ## --.--. - .-. .- .--.-.- .- .---- ... . .-.-.-.- 
 function _bb_show_file_sortby(ph)
