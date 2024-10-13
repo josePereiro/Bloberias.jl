@@ -45,7 +45,7 @@ mutable struct BlobBatch
     uuids::OrderedSet{UInt128}           # defines which blobs are present
     frames::OrderedDict{String, Any}     # ram frames
     # ram
-    temp::OrderedDict             # RAM only
+    temp::OrderedDict                    # RAM only
 end
 
 ## .-- . -. - .--..- -- .- - --..-.-.- .- -.--
@@ -62,9 +62,12 @@ end
 ## --.--. - .-. .- .--.-.- .- .---- ... . .-.-.-.- 
 # raBlob (random access blob)
 struct raBlob
-    B::Bloberia            # owner batch
-    id::String             # user defined id
-    data::OrderedDict      # loaded data blob
+    B::Bloberia                      # owner batch
+    id::String                       # user defined id
+    meta::OrderedDict{String, Any}   # config/state/meta in general
+    frames::OrderedDict              # loaded data blob
+    # ram
+    temp::OrderedDict                # RAM only
 end
 
 ## --.--. - .-. .- .--.-.- .- .---- ... . .-.-.-.- 

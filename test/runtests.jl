@@ -81,12 +81,19 @@ using Test
             B = Bloberia(B_ROOT)
             rm(B; force = true)
 
-            rb = blob!(B, "globals")
-            rb["bla"] = rand(5,5)
-            serialize(rb)
+            rb1 = blob!(B, "test")
+            serialize(rb1) 
+            rb2 = blob(B, "test")
             
-            rb2 = blob(B, "globals")
-            @test all(rb["bla"] .== rb2["bla"])
+            # default frame 
+            rb1["bla"] = rand(5,5)
+            serialize(rb1) 
+            @test rb1["bla"] == rb2["bla"]
+            
+            # custom frame ("blo")
+            rb1["blo", "bla"] = rand(5,5)
+            serialize(rb1) 
+            @test rb2["blo", "bla"] == rb1["blo", "bla"]
         end
 
 

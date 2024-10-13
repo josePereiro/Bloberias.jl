@@ -10,14 +10,9 @@ end
 
 batchpath(bb::BlobBatch) = _joinpath_err(bb)
 
-_meta_framepath(root::String) = joinpath(root, "meta.jls")
-meta_framepath(bb::BlobBatch) = _meta_framepath(batchpath(bb))
-
-_dat_framepath(root::String, frame) = joinpath(root, string(frame, ".frame.jls"))
-dat_framepath(bb::BlobBatch, frame) = _dat_framepath(batchpath(bb), frame)
-
-_uuids_framepath(root::String) = joinpath(root,  "uuid.blobs.jls")
-uuids_framepath(bb::BlobBatch) = _uuids_framepath(batchpath(bb))
+meta_framepath(bb::BlobBatch) = _bb_meta_framepath(batchpath(bb))
+dat_framepath(bb::BlobBatch, frame) = _bb_dat_framepath(batchpath(bb), frame)
+uuids_framepath(bb::BlobBatch) = _bb_uuids_framepath(batchpath(bb))
 
 ## --.--. - .-. .- .--.-.- .- .---- ... . .-.-.-.- 
 # Utils
@@ -30,8 +25,8 @@ end
 
 function _isbatchdir(path)
     isdir(path) || return false
-    isfile(_meta_framepath(path)) && return true
-    isfile(_uuids_framepath(path)) && return true
+    isfile(_bb_meta_framepath(path)) && return true
+    isfile(_bb_uuids_framepath(path)) && return true
     return false
 end
 
@@ -41,6 +36,10 @@ function _split_batchname(path)
     uuid = strip(uuid, '.')
     return frame, uuid
 end
+
+_bb_meta_framepath(root::String) = joinpath(root, "meta.jls")
+_bb_dat_framepath(root::String, frame) = joinpath(root, string(frame, ".frame.jls"))
+_bb_uuids_framepath(root::String) = joinpath(root,  "uuid.blobs.jls")
 
 ## --.--. - .-. .- .--.-.- .- .---- ... . .-.-.-.- 
 import Base.isdir

@@ -25,7 +25,6 @@ function _force_loaddat!(bb::BlobBatch, frame)
 end
 
 ## --.--. - .-. .- .--.-.- .- .---- ... . .-.-.-.- 
-# different to loadframe!
 # only load if RAM frame is empty or missing
 
 _ondemand_loadtemp!(::BlobBatch) = nothing

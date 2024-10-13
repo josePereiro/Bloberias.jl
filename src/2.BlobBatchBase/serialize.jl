@@ -27,9 +27,6 @@ end
 import Serialization.serialize
 function Serialization.serialize(bb::BlobBatch; ignoreempty = false)
     
-    ignore = ignoreempty && isempty(bb)
-    ignore && return bb
-    
     onserialize!(bb)
 
     dir = batchpath(bb)
@@ -59,14 +56,9 @@ end
 import Serialization.serialize
 function Serialization.serialize(bb::BlobBatch, frame::AbstractString; ignoreempty = true)
     
-    ignore = isempty(bb)
-    ignore = ignore && ignoreempty 
-    ignore && return bb
-    
     onserialize!(bb, frame)
 
     dir = batchpath(bb)
-    isempty(dir) && return # noop
     mkpath(dir)
     
     # meta
@@ -91,22 +83,3 @@ function Serialization.serialize(bb::BlobBatch, frame::AbstractString; ignoreemp
 
     return bb
 end
-
-## --.--. - .-. .- .--.-.- .- .---- ... . .-.-.-.- 
-function _inline_newbatch!(bb::BlobBatch)
-    bb.uuid = uuid_int()
-    bb.meta = OrderedDict()
-    bb.uuids = OrderedSet{Int128}()
-    bb.frames = OrderedDict()
-    bb.temp = OrderedDict()
-    nothing
-end
-
-# TODO: sync with "meta" limit config
-# function rollserialize!(bb::BlobBatch, lim = typemax(Inf))
-#     count = blobcount(bb)
-#     count < lim && return false
-#     serialize(bb)
-#     _inline_newbatch!(bb)
-#     return true
-# end

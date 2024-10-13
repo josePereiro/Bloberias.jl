@@ -1,7 +1,7 @@
 ## --.--. - .-. .- .--.-.- .- .---- ... . .-.-.-.- 
 # Constructor
-raBlob(B::Bloberia, id) = raBlob(B, id, OrderedDict())
-raBlob(B::Bloberia) = raBlob(B, BLOBERIA_DEFAULT_RABLOB_ID, OrderedDict())
+raBlob(B::Bloberia, id) = raBlob(B, id, OrderedDict(), OrderedDict(), OrderedDict())
+raBlob(B::Bloberia) = raBlob(B, BLOBERIA_DEFAULT_RABLOB_ID)
 
 ## --.--. - .-. .- .--.-.- .- .---- ... . .-.-.-.- 
 import Base.show
@@ -19,90 +19,42 @@ end
 
 ## --.--. - .-. .- .--.-.- .- .---- ... . .-.-.-.- 
 # getindex
-function _rablob_dict!(b::raBlob)::OrderedDict
-    _ondemand_loadrablob!(b)
-    return b.data
-end
-
 import Base.getindex
-Base.getindex(b::raBlob, key) = _rablob_dict!(b)[key]
-Base.getindex(b::raBlob, T::Type, key) = _rablob_dict!(b)[key]::T
+Base.getindex(b::raBlob, frame::AbstractString, key) = getindex(getframe(b, frame), key) # custom frame
+Base.getindex(b::raBlob, T::Type, frame::AbstractString, key) = getindex(getframe(b, frame), key)::T # custom frame
+Base.getindex(b::raBlob, key) = getindex(getframe(b), key) # default frame
+Base.getindex(b::raBlob, T::Type, key) = getindex(getframe(b), key)::T # default frame
 
+## --.--. - .-. .- .--.-.- .- .---- ... . .-.-.-.- 
 # setindex
+# setindex
+function Base.setindex!(b::raBlob, value, frame::AbstractString, key)
+    _b_frame = getframe!(b, frame) # add frame if required
+    return setindex!(_b_frame, value, key)
+end
 Base.setindex!(b::raBlob, value, key) = 
-    setindex!(_rablob_dict!(b), value, key)
-
-import Base.get
-Base.get(b::raBlob, key, default) = 
-    Base.get(_rablob_dict!(b), key, default)
-Base.get(f::Function, b::raBlob, key) = 
-    Base.get(f, _rablob_dict!(b), key)
-
-import Base.get!
-Base.get!(b::raBlob, key, default) = 
-    Base.get!(_rablob_dict!(b), key, default)
-Base.get!(f::Function, b::raBlob, key) = 
-    Base.get!(f, _rablob_dict!(b), key)
-
-import Base.keys
-Base.keys(b::raBlob) = keys(_rablob_dict!(b))
-
-import Base.values
-Base.values(b::raBlob) = keys(_rablob_dict!(b))
-
-import Base.haskey
-Base.haskey(b::raBlob, key) = keys(_rablob_dict!(b), key)
+    setindex!(b, value, BLOBBATCH_DEFAULT_FRAME_NAME, key)
 
 # import Base.get
-# function Base.get(dflt::Function, b::raBlob, frame::AbstractString, key)
-#     # frame == "temp" && return get(dflt, b.temp, key)
-#     _ondemand_loaddat!(b.batch, frame) # loaded on batch
-#     haskey(b.batch.frames, frame) || return dflt()
-#     _bb_frame = b.batch.frames[frame]
-#     haskey(_bb_frame, b.uuid) || return dflt()
-#     _b_frame = _bb_frame[b.uuid]
-#     return get(dflt, _b_frame, key)
-# end
-# Base.get(dflt::Function, b::raBlob, key) = get(dflt, b, BLOBBATCH_DEFAULT_FRAME_NAME, key)
-# Base.get(b::raBlob, key, frame::AbstractString, dflt) = get(()-> dflt, b, frame, key)
-# Base.get(b::raBlob, key, dflt) = get(b, BLOBBATCH_DEFAULT_FRAME_NAME, key, dflt)
+# Base.get(b::raBlob, key, default) = 
+#     Base.get(_rablob_dict!(b), key, default)
+# Base.get(f::Function, b::raBlob, key) = 
+#     Base.get(f, _rablob_dict!(b), key)
 
 # import Base.get!
-# function Base.get!(dflt::Function, b::raBlob, frame::AbstractString, key)
-#     # frame == "temp" && return get!(dflt, b.temp, key)
-#     _ondemand_loaddat!(b.batch, frame) # loaded on batch
-#     _bb_frame = get!(OrderedDict, b.batch.frames, frame)
-#     _b_frame = get!(OrderedDict, _bb_frame, b.uuid)
-#     return get!(dflt, _b_frame, key)
-# end
-# Base.get!(dflt::Function, b::raBlob, key) = get!(dflt, b, BLOBBATCH_DEFAULT_FRAME_NAME, key)
-# Base.get!(b::raBlob, frame::AbstractString, key, dflt) = get!(()-> dflt, b, frame, key)
-# Base.get!(b::raBlob, key, dflt) = get!(b, BLOBBATCH_DEFAULT_FRAME_NAME, key, dflt)
+# Base.get!(b::raBlob, key, default) = 
+#     Base.get!(_rablob_dict!(b), key, default)
+# Base.get!(f::Function, b::raBlob, key) = 
+#     Base.get!(f, _rablob_dict!(b), key)
+
+# import Base.keys
+# Base.keys(b::raBlob) = keys(_rablob_dict!(b))
+
+# import Base.values
+# Base.values(b::raBlob) = keys(_rablob_dict!(b))
 
 # import Base.haskey
-# function Base.haskey(b::raBlob, frame::AbstractString, key)
-#     # frame == "temp" && return haskey(b.temp, key)
-#     _ondemand_loaddat!(b.batch, frame) # loaded on batch
-#     haskey(b.batch.frames, frame) || return false
-#     _bb_frame = b.batch.frames[frame]
-#     haskey(_bb_frame, b.uuid) || return false
-#     _b_frame = _bb_frame[b.uuid]
-#     return haskey(_b_frame, key)
-# end
-# Base.haskey(b::raBlob, key) = haskey(b, BLOBBATCH_DEFAULT_FRAME_NAME, key)
+# Base.haskey(b::raBlob, key) = keys(_rablob_dict!(b), key)
 
-# ## --.--. - .-. .- .--.-.- .- .---- ... . .-.-.-.- 
-# # merge!
-# import Base.merge!
-# function Base.merge!(b::raBlob, frame::String, dat; force = true, prefix = "")
-#     _b_frame = getframe!(b, frame)
-#     for (k, v) in dat
-#         k = string(prefix, k)
-#         # check overwrite
-#         !force && haskey(_b_frame, k) && error("Overwrite is not allowed, use `force=true`")
-#         _b_frame[k] = v
-#     end
-#     return b
-# end
-# Base.merge!(b::raBlob, dat; force = true, prefix = "") = 
-#     merge!(b, BLOBBATCH_DEFAULT_FRAME_NAME, dat; force, prefix)
+# # isempty
+# Base.isempty(bb::BlobBatch) = isempty(bb.frames)

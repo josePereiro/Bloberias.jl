@@ -74,16 +74,17 @@ end
 ## --.--. - .-. .- .--.-.- .- .---- ... . .-.-.-.- 
 # getindex
 
-import Base.getindex
-Base.getindex(bb::BlobBatch, uuid::UInt128) = blob(bb, uuid) 
-Base.getindex(bb::BlobBatch, i::Int) = blob(bb, i)
+# TODO: Think about gitindex interface
+# import Base.getindex
+# Base.getindex(bb::BlobBatch, uuid::UInt128) = blob(bb, uuid) 
+# Base.getindex(bb::BlobBatch, i::Int) = blob(bb, i)
 
-# get frame 
-function Base.getindex(bb::BlobBatch, framev::Vector) # get frame interface b[["bla"]]
-    isempty(framev) && return getframe(bb) # default frame
-    @assert length(framev) == 1
-    return getframe(bb, first(framev)) # custom frame
-end
+# # get frame 
+# function Base.getindex(bb::BlobBatch, framev::Vector) # get frame interface b[["bla"]]
+#     isempty(framev) && return getframe(bb) # default frame
+#     @assert length(framev) == 1
+#     return getframe(bb, first(framev)) # custom frame
+# end
 
 # isempty
 function Base.isempty(bb::BlobBatch)
