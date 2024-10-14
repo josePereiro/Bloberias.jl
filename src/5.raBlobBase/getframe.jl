@@ -7,14 +7,12 @@ function getframe(rb::raBlob, frame::AbstractString)
     _ondemand_loaddat!(rb, frame)
     return rb.frames[frame]
 end
-getframe(rb::raBlob) = getframe(rb, BLOBERIA_DEFAULT_FRAME_NAME)
 
 function getframe!(rb::raBlob, frame::AbstractString)
     _ondemand_loaddat!(rb, frame) # loaded on batch
     _frame = get!(OrderedDict, rb.frames, frame)
     return _frame
 end
-getframe!(rb::raBlob) = getframe!(rb, BLOBBATCH_DEFAULT_FRAME_NAME)
 
 ## --.--. - .-. .- .--.-.- .- .---- ... . .-.-.-.- 
 # hasframe

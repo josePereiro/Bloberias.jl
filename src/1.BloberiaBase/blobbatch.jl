@@ -1,6 +1,8 @@
 ## --.--. - .-. .- .--.-.- .- .---- ... . .-.-.-.- 
 # Create an empty blobbatch
-blobbatch!(B::Bloberia, group::AbstractString ) = BlobBatch(B, group)
+blobbatch!(B::Bloberia, group::AbstractString, uuid::UInt128) = 
+    BlobBatch(B, group, uuid)
+blobbatch!(B::Bloberia, group::AbstractString) = BlobBatch(B, group)
 blobbatch!(B::Bloberia) = BlobBatch(B, BLOBERIA_DEFAULT_BATCH_GROUP)
 
 function blobbatch(B::Bloberia, uuid0::UInt128) # existing batch

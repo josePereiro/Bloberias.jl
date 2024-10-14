@@ -1,3 +1,10 @@
+# TODO: create bloberia(::AbstractBlob), etc kind of accessor interfaces
+
+# DONE: BlobyRef
+# - An object containuing all data for pointing to a BlobyObject/Val
+# - Its main goald is to be cheap to serialized
+# - It must serialized the expected return type
+
 # TODO: Work on type stability
 
 # TODO: Dry the code: a lot of code repetition

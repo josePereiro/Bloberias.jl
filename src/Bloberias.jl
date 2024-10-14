@@ -45,20 +45,26 @@ module Bloberias
     include("2.BlobBatchBase/meta.jl")
     include("2.BlobBatchBase/serialize.jl")
     
-    #! include 3.btBlobBase
-    include("3.btBlobBase/base.jl")
-    include("3.btBlobBase/getframe.jl")
-    include("3.btBlobBase/lock.jl")
-    include("3.btBlobBase/serialize.jl")
+    #! include 3.AbstractBlobBase
+    include("3.AbstractBlobBase/base.jl")
+
+    #! include 4.btBlobBase
+    include("4.btBlobBase/base.jl")
+    include("4.btBlobBase/getframe.jl")
+    include("4.btBlobBase/lock.jl")
+    include("4.btBlobBase/serialize.jl")
     
-    #! include 4.raBlobBase
-    include("4.raBlobBase/base.jl")
-    include("4.raBlobBase/filesys.jl")
-    include("4.raBlobBase/getframe.jl")
-    include("4.raBlobBase/loading.jl")
-    include("4.raBlobBase/lock.jl")
-    include("4.raBlobBase/meta.jl")
-    include("4.raBlobBase/serialize.jl")
+    #! include 5.raBlobBase
+    include("5.raBlobBase/base.jl")
+    include("5.raBlobBase/filesys.jl")
+    include("5.raBlobBase/getframe.jl")
+    include("5.raBlobBase/loading.jl")
+    include("5.raBlobBase/lock.jl")
+    include("5.raBlobBase/meta.jl")
+    include("5.raBlobBase/serialize.jl")
+    
+    #! include 6.BlobyRefBase
+    include("6.BlobyRefBase/base.jl")
     
     #! include 99.Utils
     

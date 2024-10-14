@@ -19,11 +19,11 @@ end
 
 ## --.--. - .-. .- .--.-.- .- .---- ... . .-.-.-.- 
 # getindex
-import Base.getindex
-Base.getindex(b::btBlob, frame::AbstractString, key) = getindex(getframe(b, frame), key) # custom frame
-Base.getindex(b::btBlob, T::Type, frame::AbstractString, key) = getindex(getframe(b, frame), key)::T # custom frame
-Base.getindex(b::btBlob, key) = getindex(getframe(b), key) # default frame
-Base.getindex(b::btBlob, T::Type, key) = getindex(getframe(b), key)::T # default frame
+# import Base.getindex
+# Base.getindex(b::btBlob, frame::AbstractString, key) = getindex(getframe(b, frame), key) # custom frame
+# Base.getindex(b::btBlob, T::Type, frame::AbstractString, key) = getindex(getframe(b, frame), key)::T # custom frame
+# Base.getindex(b::btBlob, key) = getindex(getframe(b), key) # default frame
+# Base.getindex(b::btBlob, T::Type, key) = getindex(getframe(b), key)::T # default frame
 
 # # TODO: think about it
 # function Base.getindex(b::btBlob, framev::Vector) # get frame interface b[["bla"]]
@@ -49,9 +49,9 @@ function Base.get(dflt::Function, b::btBlob, frame::AbstractString, key)
     _b_frame = _bb_frame[b.uuid]
     return get(dflt, _b_frame, key)
 end
-Base.get(dflt::Function, b::btBlob, key) = get(dflt, b, BLOBBATCH_DEFAULT_FRAME_NAME, key)
-Base.get(b::btBlob, key, frame::AbstractString, dflt) = get(()-> dflt, b, frame, key)
-Base.get(b::btBlob, key, dflt) = get(b, BLOBBATCH_DEFAULT_FRAME_NAME, key, dflt)
+# Base.get(dflt::Function, b::btBlob, key) = get(dflt, b, BLOBBATCH_DEFAULT_FRAME_NAME, key)
+# Base.get(b::btBlob, key, frame::AbstractString, dflt) = get(()-> dflt, b, frame, key)
+# Base.get(b::btBlob, key, dflt) = get(b, BLOBBATCH_DEFAULT_FRAME_NAME, key, dflt)
 
 import Base.get!
 function Base.get!(dflt::Function, b::btBlob, frame::AbstractString, key)
@@ -65,28 +65,6 @@ Base.get!(dflt::Function, b::btBlob, key) = get!(dflt, b, BLOBBATCH_DEFAULT_FRAM
 Base.get!(b::btBlob, frame::AbstractString, key, dflt) = get!(()-> dflt, b, frame, key)
 Base.get!(b::btBlob, key, dflt) = get!(b, BLOBBATCH_DEFAULT_FRAME_NAME, key, dflt)
 
-## --.--. - .-. .- .--.-.- .- .---- ... . .-.-.-.-
-# :set! :get :get! :dry 
-# all in ram
-function withblob!(f::Function, b::btBlob, mode::Symbol, frame, key::String)
-    if mode == :set!
-        return setindex!(b, f(), frame, key)
-    end
-    if mode == :get
-        return get(f, b, frame, key)
-    end
-    if mode == :get!
-        return get!(f, b, frame, key)
-    end
-    if mode == :dry
-        return f()
-    end
-    error("Unknown mode, ", mode, ". see withblob! src")
-end
-withblob!(f::Function, b::btBlob, mode::Symbol, key::String) = 
-    withblob!(f, b, mode, BLOBBATCH_DEFAULT_FRAME_NAME, key)
-
-
 import Base.haskey
 function Base.haskey(b::btBlob, frame::AbstractString, key)
     # frame == "temp" && return haskey(b.temp, key)
@@ -97,7 +75,6 @@ function Base.haskey(b::btBlob, frame::AbstractString, key)
     _b_frame = _bb_frame[b.uuid]
     return haskey(_b_frame, key)
 end
-Base.haskey(b::btBlob, key) = haskey(b, BLOBBATCH_DEFAULT_FRAME_NAME, key)
 
 ## --.--. - .-. .- .--.-.- .- .---- ... . .-.-.-.- 
 # merge!
@@ -114,3 +91,4 @@ function Base.merge!(b::btBlob, frame::String, dat; force = true, prefix = "")
 end
 Base.merge!(b::btBlob, dat; force = true, prefix = "") = 
     merge!(b, BLOBBATCH_DEFAULT_FRAME_NAME, dat; force, prefix)
+

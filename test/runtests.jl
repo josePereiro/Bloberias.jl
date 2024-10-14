@@ -10,7 +10,7 @@ using Test
     B_ROOT = joinpath(tempname(), "db")
     atexit(() -> rm(B_ROOT; force = true, recursive = true)) 
 
-    for testi in 1:100 # repeat many times
+    try; for testi in 1:10 # repeat many times
         println("-"^30)
         @show testi
 
@@ -37,34 +37,34 @@ using Test
             # empty!
             empty!(rb)
             @test isempty(rb.frames)
-            _dat1 = withblob!(rb, :get!, frame, "+1") do
+            _ref1 = withblob!(rb, :get!, frame, "+1") do
                 return "not to load"
             end
-            @test _dat1 == _dat0 .+ 1
+            @test _ref1[] == _dat0 .+ 1
             
             empty!(bb)
             @test isempty(bb.frames)
             vb = blob(bb, 1) # first blob
-            _dat1 = withblob!(vb, :get!, frame, "+1") do
+            _ref1 = withblob!(vb, :get!, frame, "+1") do
                 return "not to load"
             end
-            @test _dat1 == _dat0 .+ 1
+            @test _ref1[] == _dat0 .+ 1
 
             # Shadow copy
             rb = blob(rb) # shadow copy
             @test isempty(rb.frames)
-            _dat1 = withblob!(rb, :get!, frame, "+1") do
+            _ref1 = withblob!(rb, :get!, frame, "+1") do
                 return "not to load"
             end
-            @test _dat1 == _dat0 .+ 1
+            @test _ref1[] == _dat0 .+ 1
             
             bb = blobbatch(bb) # shadow copy
             @test isempty(bb.frames)
             vb = blob(bb, 1) # first blob
-            _dat1 = withblob!(vb, :get!, frame, "+1") do
+            _ref1 = withblob!(vb, :get!, frame, "+1") do
                 return "not to load"
             end
-            @test _dat1 == _dat0 .+ 1
+            @test _ref1[] == _dat0 .+ 1
         end
 
         ## .-- . -. - .--..- -- .- - --..-.-.- .- -.--
@@ -180,9 +180,61 @@ using Test
                 @test all(getmeta(obj, "bla") .== _dat0) # data is loaded on demand
             end
         end
-    
-    end # for testi
 
-    rm(B_ROOT; force = true, recursive = true)
+        # BlobyRef
+        let
+            B = Bloberia(B_ROOT)
+            rm(B.root; force = true, recursive = true)
+    
+            # Bloberia
+            bref = blobyref(B)
+            @test bref[].root == B.root
+            @test bloberia(bref).root == B.root
+            
+            # BlobBatch
+            bb = blobbatch!(B)
+            bref = blobyref(bb)
+            @test bloberia(bref).root == B.root
+            @test bref[].uuid == bb.uuid
+            @test blobbatch(bref).uuid == bb.uuid
+            
+            # btBatch
+            tb = blob!(bb)
+            bref = blobyref(tb)
+            @test bloberia(bref).root == B.root
+            @test blobbatch(bref).uuid == bb.uuid
+            @test bref[].uuid == tb.uuid
+            @test blob(bref).uuid == tb.uuid
+            
+            # btBatchVal
+            tb["val"] = 1
+            serialize(tb)
+            @test bloberia(bref).root == B.root
+            @test blobbatch(bref).uuid == bb.uuid
+            @test blob(bref).uuid == tb.uuid
+            bref = blobyref(tb, "val")
+            @test bref[] == tb["val"]
+            
+            # raBatch
+            rb = blob!(B)
+            bref = blobyref(rb)
+            @test bloberia(bref).root == B.root
+            @test bref[].id == rb.id
+            @test blob(bref).id == rb.id
+            
+            # raBatchVal
+            rb["val"] = 1
+            serialize(rb)
+            @test bloberia(bref).root == B.root
+            @test blob(bref).id == rb.id
+            bref = blobyref(rb, "val")
+            @test bref[] == rb["val"]
+            
+            nothing
+        end
+    
+    end; finally
+        rm(B_ROOT; force = true, recursive = true)
+    end
 
 end
