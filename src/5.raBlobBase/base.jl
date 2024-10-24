@@ -4,6 +4,7 @@ raBlob(B::Bloberia, id) = raBlob(B, id, OrderedDict(), OrderedDict(), OrderedDic
 raBlob(B::Bloberia) = raBlob(B, BLOBERIA_DEFAULT_RABLOB_ID)
 raBlob(rb::raBlob) = raBlob(rb.B, rb.id) # shadow copy
 
+# TODO: Think using copy better
 blob(rb::raBlob) = raBlob(rb)
 
 ## --.--. - .-. .- .--.-.- .- .---- ... . .-.-.-.- 

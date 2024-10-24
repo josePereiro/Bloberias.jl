@@ -29,13 +29,11 @@ end
 # or give a new one
 function headbatch!(B::Bloberia, group::AbstractString)::BlobBatch
     # find head
-    bb = nothing
-    foreach_batch(B, group) do _bb
-        isfullbatch(_bb) && return :continue
-        bb = _bb
-        return :break
+    for bb in eachbatch(B, group)
+        isfullbatch(_bb) && continue
+        return bb
     end
-    return isnothing(bb) ? blobbatch!(B, group) : bb
+    return blobbatch!(B, group)
 end
 headbatch!(B::Bloberia) = headbatch!(B, BLOBERIA_DEFAULT_BATCH_GROUP)
 

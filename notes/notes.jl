@@ -1,3 +1,7 @@
+# TODO: foreach_rablobs
+
+# TODO: put blobbatches groups into folders?
+
 # TODO: create bloberia(::AbstractBlob), etc kind of accessor interfaces
 
 # DONE: BlobyRef

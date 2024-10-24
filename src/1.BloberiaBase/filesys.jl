@@ -48,7 +48,7 @@ end
 
 function blobatches_filesize(B::Bloberia)
     fsize = 0.0
-    foreach_batch(B) do bb
+    for bb in B
         fsize += filesize(bb)
     end
     return fsize
