@@ -38,6 +38,7 @@ Base.mkpath(B::Bloberia; kwargs...) = mkpath(B.root; kwargs...)
 function rablobs_filesize(B::Bloberia)
     fsize = 0.0
     rabs = rablobs_dir(B)
+    isdir(rabs) || return fsize
     for fn in readdir(rabs; join=true)
         isfile(fn) || continue
         endswith(basename(fn), ".jls") || continue

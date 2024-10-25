@@ -4,6 +4,10 @@ btBlob(bb::BlobBatch) = btBlob(bb, uuid_int())
 # NOTE: no shadow copy, this is a dataless object
 
 ## --.--. - .-. .- .--.-.- .- .---- ... . .-.-.-.- 
+blobbatch(b::btBlob) = b.batch
+bloberia(b::btBlob) = bloberia(blobbatch(b))
+
+## --.--. - .-. .- .--.-.- .- .---- ... . .-.-.-.- 
 import Base.show
 function Base.show(io::IO, b::btBlob)
     print(io, "btBlob(", repr(b.uuid), ")")

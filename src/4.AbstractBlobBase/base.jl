@@ -10,6 +10,11 @@ Base.getindex(b::AbstractBlob, key) =
 Base.getindex(b::AbstractBlob, T::Type, key) = 
     getindex(getframe(b), key)::T # default frame
 
+Base.getindex(b::AbstractBlob) = getframe(b)
+Base.getindex(b::AbstractBlob, key::Vector{String}) = 
+    getframe(b, first(key))
+
+
 ## --.--. - .-. .- .--.-.- .- .---- ... . .-.-.-.- 
 # TODO: Move to AbstractBlob
 Base.setindex!(b::AbstractBlob, value, key) = 
@@ -68,22 +73,21 @@ getframe!(b::AbstractBlob) = getframe!(b, BLOBBATCH_DEFAULT_FRAME_NAME)
 getframe(b::AbstractBlob) = getframe(b, BLOBBATCH_DEFAULT_FRAME_NAME)
 
 ## --.--. - .-. .- .--.-.- .- .---- ... . .-.-.-.- 
-# lock
-import Base.lock
-Base.lock(f::Function, b::AbstractBlob; kwargs...) = _lock(f, b; kwargs...)
-Base.lock(b::AbstractBlob; kwargs...) = _lock(b; kwargs...) 
-
-import Base.islocked
-Base.islocked(b::AbstractBlob) = _islocked(b) 
-
-import Base.unlock
-Base.unlock(b::AbstractBlob; force = false) = _unlock(b; force) 
-
-## --.--. - .-. .- .--.-.- .- .---- ... . .-.-.-.- 
 # blobyref
 blobyref(b::AbstractBlob, key; rT = nothing) = 
     blobyref(b, BLOBBATCH_DEFAULT_FRAME_NAME, key; rT)
 
 
-    ## --.--. - .-. .- .--.-.- .- .---- ... . .-.-.-.- 
+## --.--. - .-. .- .--.-.- .- .---- ... . .-.-.-.- 
+import Base.haskey
 Base.haskey(b::AbstractBlob, key) = haskey(b, BLOBBATCH_DEFAULT_FRAME_NAME, key)
+
+## --.--. - .-. .- .--.-.- .- .---- ... . .-.-.-.- 
+import Base.merge!
+function Base.merge!(b::AbstractBlob, frame::AbstractString, vals)
+    for (k, v) in vals
+        setindex!(b, v, frame, k)
+    end
+end
+Base.merge!(b::AbstractBlob, vals) = 
+    merge!(b, BLOBBATCH_DEFAULT_FRAME_NAME, vals)

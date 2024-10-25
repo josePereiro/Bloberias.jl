@@ -8,11 +8,11 @@ BlobBatch(B::Bloberia, group::AbstractString, uuid::UInt128) = BlobBatch(B, grou
 )
 BlobBatch(B::Bloberia, group::AbstractString) = BlobBatch(B, group, uuid_int())
 BlobBatch(B::Bloberia) = BlobBatch(B, BLOBBATCH_DEFAULT_FRAME_NAME, uuid_int())
-BlobBatch(bb::BlobBatch) = BlobBatch(bb.B, bb.group, bb.uuid) # Shadow price
+BlobBatch(bb::BlobBatch) = BlobBatch(bb.B, bb.group, bb.uuid) # Shadow copy
 
 ## --.--. - .-. .- .--.-.- .- .---- ... . .-.-.-.- 
-blobbatch(bb::BlobBatch) = BlobBatch(bb) # Shadow copy
-
+bloberia(bb::BlobBatch) = bb.B
+blobbatch(bb::BlobBatch) = bb
 
 ## --.--. - .-. .- .--.-.- .- .---- ... . .-.-.-.- 
 function _bb_show_file_sortby(ph)

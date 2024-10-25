@@ -1,4 +1,12 @@
 ## .-- . -. - .--..- -- .- - --..-.-.- .- -.--
+abstract type BlobyObj end
+
+# DOING:
+# - create a global interface for locks:
+#   - Use a common folder
+
+
+## .-- . -. - .--..- -- .- - --..-.-.- .- -.--
 # frames
 # |-- meta.jls 
 # | # random access blobs
@@ -11,7 +19,7 @@
 # |-- 0...<h=0xa58d> 
 # |-- custom_group...<h=0xa58d> 
 # .
-mutable struct Bloberia
+mutable struct Bloberia <: BlobyObj
     root::String
     meta::OrderedDict   # Persistants blob
     temp::OrderedDict   # RAM only
@@ -20,7 +28,7 @@ end
 ## .-- . -. - .--..- -- .- - --..-.-.- .- -.--
 # TODO: dry some code using AbstractFramedBlob
 # ex: getframe
-abstract type AbstractFramedBlob end
+abstract type AbstractFramedBlob <: BlobyObj end
 
 ## .-- . -. - .--..- -- .- - --..-.-.- .- -.--
 # BlobBatch

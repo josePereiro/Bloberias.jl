@@ -73,3 +73,11 @@ function _pretty_print_pairs(io::IO, k, v)
     print(io, string(k), ": ")
     printstyled(io, string(v); color = :blue)
 end
+
+function _hashed_id(s::AbstractString, args...)
+    h0 = hash(0)
+    for a in args
+        h0 = hash(a, h0)
+    end
+    return string(s, repr(h0))
+end

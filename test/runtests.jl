@@ -2,6 +2,7 @@ using Bloberias
 using Base.Threads
 using Test
 
+## .-- . -. - .--..- -- .- - --..-.-.- .- -.--
 @testset "Bloberias.jl" begin
     
     # TODO: update tests
@@ -51,14 +52,14 @@ using Test
             @test _ref1[] == _dat0 .+ 1
 
             # Shadow copy
-            rb = blob(rb) # shadow copy
+            rb = raBlob(rb) # shadow copy
             @test isempty(rb.frames)
             _ref1 = withblob!(rb, :get!, frame, "+1") do
                 return "not to load"
             end
             @test _ref1[] == _dat0 .+ 1
             
-            bb = blobbatch(bb) # shadow copy
+            bb = BlobBatch(bb) # shadow copy
             @test isempty(bb.frames)
             vb = blob(bb, 1) # first blob
             _ref1 = withblob!(vb, :get!, frame, "+1") do
@@ -231,6 +232,49 @@ using Test
             @test bref[] == rb["val"]
             
             nothing
+        end
+
+        ## .-- . -. - .--..- -- .- - --..-.-.- .- -.--
+        # lock test
+        testi == 1 && let
+            B = Bloberia(B_ROOT)
+            rm(B.root; force = true, recursive = true)
+            bb = blobbatch!(B)
+            rb = blob!(B)
+            vb = blob!(bb)
+
+            _bos = [B, bb, rb, vb]
+            _dt = 1
+            # @show _dt
+            # no lock
+            _t = @elapsed @sync for bo in _bos
+                @async sleep(_dt)
+            end
+            # @show _t
+            @test _t < length(_bos) * _dt
+
+            # per object lock
+            # effectively no lock
+            _t = @elapsed @sync for bo in _bos
+                @async lock(bo) do
+                    @test true
+                    sleep(_dt)
+                end
+            end
+            # @show _t
+            @test _t < length(_bos) * _dt
+
+            # same lock
+            _t = @elapsed @sync for bo in _bos
+                B = bloberia(bo)
+                @async lock(B) do
+                    @test true
+                    sleep(_dt)
+                end
+            end
+            # @show _t
+            @test _t >= length(_bos) * _dt
+
         end
     
     end; finally

@@ -30,7 +30,7 @@ end
 function headbatch!(B::Bloberia, group::AbstractString)::BlobBatch
     # find head
     for bb in eachbatch(B, group)
-        isfullbatch(_bb) && continue
+        isfullbatch(bb) && continue
         return bb
     end
     return blobbatch!(B, group)

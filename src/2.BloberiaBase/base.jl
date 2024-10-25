@@ -9,6 +9,9 @@ Bloberia(root) = Bloberia(root, OrderedDict(), OrderedDict())
 Bloberia() = Bloberia("")
 
 ## --.--. - .-. .- .--.-.- .- .---- ... . .-.-.-.- 
+bloberia(bo::Bloberia) = bo
+
+## --.--. - .-. .- .--.-.- .- .---- ... . .-.-.-.- 
 import Base.show
 function Base.show(io::IO, B::Bloberia)
     print(io, "Bloberia")
