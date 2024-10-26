@@ -14,7 +14,6 @@ Base.getindex(b::AbstractBlob) = getframe(b)
 Base.getindex(b::AbstractBlob, key::Vector{String}) = 
     getframe(b, first(key))
 
-
 ## --.--. - .-. .- .--.-.- .- .---- ... . .-.-.-.- 
 # TODO: Move to AbstractBlob
 Base.setindex!(b::AbstractBlob, value, key) = 

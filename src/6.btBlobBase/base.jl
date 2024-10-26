@@ -1,7 +1,12 @@
 ## --.--. - .-. .- .--.-.- .- .---- ... . .-.-.-.- 
 # Constructor
 btBlob(bb::BlobBatch) = btBlob(bb, uuid_int())
-# NOTE: no shadow copy, this is a dataless object
+
+# shallow copy 
+btBlob(bt::btBlob) = btBlob(b.batch, bt.uuid)
+
+import Base.copy
+Base.copy(bt::btBlob) = btBlob(bt)
 
 ## --.--. - .-. .- .--.-.- .- .---- ... . .-.-.-.- 
 blobbatch(b::btBlob) = b.batch
@@ -20,21 +25,6 @@ function Base.show(io::IO, b::btBlob)
         _kv_print_type(io, _b_frame; _typeof = typeof)
     end
 end
-
-## --.--. - .-. .- .--.-.- .- .---- ... . .-.-.-.- 
-# getindex
-# import Base.getindex
-# Base.getindex(b::btBlob, frame::AbstractString, key) = getindex(getframe(b, frame), key) # custom frame
-# Base.getindex(b::btBlob, T::Type, frame::AbstractString, key) = getindex(getframe(b, frame), key)::T # custom frame
-# Base.getindex(b::btBlob, key) = getindex(getframe(b), key) # default frame
-# Base.getindex(b::btBlob, T::Type, key) = getindex(getframe(b), key)::T # default frame
-
-# # TODO: think about it
-# function Base.getindex(b::btBlob, framev::Vector) # get frame interface b[["bla"]]
-#     isempty(framev) && return getframe(b)
-#     @assert length(framev) == 1
-#     return getframe(b, first(framev))
-# end
 
 # setindex
 function Base.setindex!(b::btBlob, value, frame::AbstractString, key)

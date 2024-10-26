@@ -2,7 +2,12 @@
 # Constructor
 raBlob(B::Bloberia, id) = raBlob(B, id, OrderedDict(), OrderedDict(), OrderedDict())
 raBlob(B::Bloberia) = raBlob(B, BLOBERIA_DEFAULT_RABLOB_ID)
+
+# shallow copy 
 raBlob(rb::raBlob) = raBlob(rb.B, rb.id) # shadow copy
+
+import Base.copy
+Base.copy(rb::raBlob) = raBlob(rb)
 
 ## --.--. - .-. .- .--.-.- .- .---- ... . .-.-.-.- 
 bloberia(b::raBlob) = b.B

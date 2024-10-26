@@ -13,6 +13,16 @@ function getframe(bb::BlobBatch, frame::AbstractString)
 end
 getframe(bb::BlobBatch) = getframe(bb, BLOBERIA_DEFAULT_FRAME_NAME)
 
+
+# function getframe(bb::BlobBatch, frame::AbstractString)
+#     frame == "temp" && return bb.temp
+#     frame == "meta" && return _ondemand_loadmeta!(bb)
+#     frame == "uuids" && return _ondemand_loaduuids!(bb)
+#     frames = _ondemand_loaddat!(bb, frame)
+#     return getindex(frames, frame)
+# end
+# getframe(bb::BlobBatch) = getframe(bb, BLOBERIA_DEFAULT_FRAME_NAME)
+
 ## --.--. - .-. .- .--.-.- .- .---- ... . .-.-.-.- 
 # hasframe
 function hasframe_ram(bb::BlobBatch, frame)
@@ -25,12 +35,8 @@ end
 
 function hasframe_disk(bb::BlobBatch, frame)
     frame == "temp" && return false
-    if frame == "meta" 
-        _file = meta_framepath(bb)
-        return isfile(_file)
-    end
-    _file = dat_framepath(bb, frame)
-    return isfile(_file)
+    frame == "meta" && return isfile(meta_framepath(bb))
+    return isfile(dat_framepath(bb, frame))
 end
 
 function hasframe(bb::BlobBatch, frame)

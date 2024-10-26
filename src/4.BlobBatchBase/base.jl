@@ -8,9 +8,15 @@ BlobBatch(B::Bloberia, group::AbstractString, uuid::UInt128) = BlobBatch(B, grou
 )
 BlobBatch(B::Bloberia, group::AbstractString) = BlobBatch(B, group, uuid_int())
 BlobBatch(B::Bloberia) = BlobBatch(B, BLOBBATCH_DEFAULT_FRAME_NAME, uuid_int())
-BlobBatch(bb::BlobBatch) = BlobBatch(bb.B, bb.group, bb.uuid) # Shadow copy
+
+# shallow copy 
+BlobBatch(bb::BlobBatch) = BlobBatch(bb.B, bb.group, bb.uuid)
+
+import Base.copy
+Base.copy(bb::BlobBatch) = BlobBatch(bb)
 
 ## --.--. - .-. .- .--.-.- .- .---- ... . .-.-.-.- 
+# parents
 bloberia(bb::BlobBatch) = bb.B
 blobbatch(bb::BlobBatch) = bb
 

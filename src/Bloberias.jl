@@ -35,34 +35,38 @@ module Bloberias
     include("2.BloberiaBase/rablob.jl")
     include("2.BloberiaBase/serialize.jl")
     
-    #! include 3.BlobBatchBase    
-    include("3.BlobBatchBase/base.jl")
-    include("3.BlobBatchBase/btblob.jl")
-    include("3.BlobBatchBase/filesys.jl")
-    include("3.BlobBatchBase/getframe.jl")
-    include("3.BlobBatchBase/iterator.jl")
-    include("3.BlobBatchBase/loading.jl")
-    include("3.BlobBatchBase/meta.jl")
-    include("3.BlobBatchBase/serialize.jl")
+    #! include 3.BlobyFramedObjBase
+    include("3.BlobyFramedObjBase/base.jl")
+
+    #! include 4.BlobBatchBase    
+    include("4.BlobBatchBase/base.jl")
+    include("4.BlobBatchBase/btblob.jl")
+    include("4.BlobBatchBase/filesys.jl")
+    include("4.BlobBatchBase/getframe.jl")
+    include("4.BlobBatchBase/iterator.jl")
+    include("4.BlobBatchBase/loading.jl")
+    include("4.BlobBatchBase/meta.jl")
+    include("4.BlobBatchBase/serialize.jl")
     
-    #! include 4.AbstractBlobBase
-    include("4.AbstractBlobBase/base.jl")
+    #! include 5.AbstractBlobBase
+    include("5.AbstractBlobBase/base.jl")
     
-    #! include 5.btBlobBase       
-    include("5.btBlobBase/base.jl")
-    include("5.btBlobBase/getframe.jl")
-    include("5.btBlobBase/serialize.jl")
+    #! include 6.btBlobBase       
+    include("6.btBlobBase/base.jl")
+    include("6.btBlobBase/getframe.jl")
+    include("6.btBlobBase/serialize.jl")
     
-    #! include 7.BlobyRefBase
-    include("7.BlobyRefBase/base.jl")
+    #! include 7.raBlobBase
+    include("7.raBlobBase/base.jl")
+    include("7.raBlobBase/filesys.jl")
+    include("7.raBlobBase/getframe.jl")
+    include("7.raBlobBase/loading.jl")
+    include("7.raBlobBase/meta.jl")
+    include("7.raBlobBase/serialize.jl")
+
+    #! include 8.BlobyRefBase
+    include("8.BlobyRefBase/base.jl")
     
-    #! include 6.raBlobBase
-    include("6.raBlobBase/base.jl")
-    include("6.raBlobBase/filesys.jl")
-    include("6.raBlobBase/getframe.jl")
-    include("6.raBlobBase/loading.jl")
-    include("6.raBlobBase/meta.jl")
-    include("6.raBlobBase/serialize.jl")
     
     #! include 99.Utils
     

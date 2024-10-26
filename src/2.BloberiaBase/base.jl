@@ -8,6 +8,12 @@ const BLOBERIA_DEFAULT_FRAME_NAME = "0"
 Bloberia(root) = Bloberia(root, OrderedDict(), OrderedDict())
 Bloberia() = Bloberia("")
 
+# shallow copy 
+Bloberia(B::Bloberia) = Bloberia(B.root) 
+
+import Base.copy
+Base.copy(B::Bloberia) = Bloberia(B) 
+
 ## --.--. - .-. .- .--.-.- .- .---- ... . .-.-.-.- 
 bloberia(bo::Bloberia) = bo
 

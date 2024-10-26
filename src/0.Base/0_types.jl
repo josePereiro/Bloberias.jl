@@ -26,9 +26,9 @@ mutable struct Bloberia <: BlobyObj
 end
 
 ## .-- . -. - .--..- -- .- - --..-.-.- .- -.--
-# TODO: dry some code using AbstractFramedBlob
+# TODO: dry some code using BlobyFramedObj
 # ex: getframe
-abstract type AbstractFramedBlob <: BlobyObj end
+abstract type BlobyFramedObj <: BlobyObj end
 
 ## .-- . -. - .--..- -- .- - --..-.-.- .- -.--
 # BlobBatch
@@ -49,7 +49,7 @@ abstract type AbstractFramedBlob <: BlobyObj end
 #   |-- {"mtime" => 1.718214748856385e9, ...}
 
 # TODO: define types
-mutable struct BlobBatch <: AbstractFramedBlob
+mutable struct BlobBatch <: BlobyFramedObj
     B::Bloberia                          # Parent folder
     group::String                        # Batch group (defaul "0")
     uuid::UInt128                        # use UUIDs.uuid4().value
@@ -64,7 +64,7 @@ end
 ## .-- . -. - .--..- -- .- - --..-.-.- .- -.--
 # TODO: dry some code using AbstractBlob
 # ex: getframe
-abstract type AbstractBlob <: AbstractFramedBlob end
+abstract type AbstractBlob <: BlobyFramedObj end
 
 ## .-- . -. - .--..- -- .- - --..-.-.- .- -.--
 # btBlob (a blob in a batch)
