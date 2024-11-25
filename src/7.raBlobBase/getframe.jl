@@ -5,7 +5,7 @@ function getframe(rb::raBlob, frame::AbstractString)
         return rb.meta
     end
     _ondemand_loaddat!(rb, frame)
-    return rb.frames[frame]
+    return getindex(rb.frames, frame)
 end
 
 function getframe!(rb::raBlob, frame::AbstractString)
@@ -13,18 +13,6 @@ function getframe!(rb::raBlob, frame::AbstractString)
     _frame = get!(OrderedDict, rb.frames, frame)
     return _frame
 end
-
-# function getframe(rb::raBlob, frame::AbstractString)
-#     frame == "temp" && return bb.temp
-#     frame == "meta" && return _ondemand_loadmeta!(rb)
-#     _frames = _ondemand_loaddat!(rb, frame)
-#     return getindex(_frames, frame)
-# end
-
-# function getframe!(rb::raBlob, frame::AbstractString)
-#     _frames = _ondemand_loaddat!(rb, frame) # loaded on batch
-#     return get!(OrderedDict, _frames, frame)
-# end
 
 ## --.--. - .-. .- .--.-.- .- .---- ... . .-.-.-.- 
 # hasframe
@@ -39,7 +27,8 @@ end
 function hasframe_disk(rb::raBlob, frame)
     frame == "temp" && return false
     frame == "meta" && isfile(meta_framepath(rb))
-    return isfile(dat_framepath(rb, frame))
+    isfile(dat_framepath(rb, frame)) && return true
+    return false
 end
 
 function hasframe(rb::raBlob, frame)

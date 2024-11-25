@@ -1,3 +1,13 @@
+# IDEA: Generalize a BlobBatch
+# - A BlobBatch can have a vector frame or a random access frame interface
+#   - It is just an extention of the meta frame capability
+#   - 
+
+# IDEA
+# - Think about a different interface to access the ram version and the disk version.
+# - The current interface is just a default which might be too opinative.
+# - Make it explicit first and then create the defaults. 
+
 # TODO: foreach_rablobs
 
 # TODO: put blobbatches groups into folders?
