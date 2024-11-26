@@ -1,32 +1,36 @@
-# TODO: serialize meta
-
 ## --.--. - .-. .- .--.-.- .- .---- ... . .-.-.-.- 
-# TODO: make an interface for this so more routines can be added
+# TODO: Generilize callbacks (see ObaServers.jl)
+BLOBERIA_ONSERIELIZE_CALLBACKS = Function[]
 function onserialize!(B::Bloberia, args...)
-    _ondemand_loadmeta!(B)
-    B.meta["serialization.last.time"] = time()
+    
+    # default up meta
+    meta = getmeta(B)
+    meta["serialization.last.time"] = time()
+    
+    # custom
+    for callback in BLOBERIA_ONSERIELIZE_CALLBACKS
+        callback(B)
+    end
+
     return nothing
 end
 
 # --.--. - .-. .- .--.-.- .- .---- ... . .-.-.-.- 
-function _serialize_meta(B::Bloberia)
-    path = meta_framepath(B)
+function serialize_meta!(B::Bloberia)
+    path = meta_jlspath(B)
     _serialize(path, B.meta)
 end
 
 ## --.--. - .-. .- .--.-.- .- .---- ... . .-.-.-.- 
-import Serialization.serialize
-function Serialization.serialize(B::Bloberia; ignoreempty = true)
-
-    dir = bloberia_dir(B)
-    mkpath(dir)
+function serialize!(B::Bloberia)
+    
+    mkpath(B)
 
     # callback
     onserialize!(B)
 
     # meta
-    ignore = ignoreempty && isempty(B.meta)
-    ignore || _serialize_meta(B)
+    serialize_meta!(B)
 
     return B
 end

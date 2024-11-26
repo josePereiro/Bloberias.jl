@@ -1,13 +1,17 @@
-# -. -- .- ---- - .-. - - .-- . -..... --- -- - .
-# To Implement
-# A hash for distinguising the object
-# It should not change if the object is modified while locked. 
-function _lock_obj_identity_hash(obj, h0)::UInt64
-    error("Non implemented!!!")
+function _field_hash(obj, h = 0)
+    h = hash(h)
+    for f in fieldnames(typeof(obj))
+        v = getfield(obj, f)
+        _valid_type = false
+        _valid_type |= isa(v, String)
+        _valid_type |= isa(v, Symbol)
+        _valid_type |= isa(v, Integer)
+        _valid_type || continue
+        h = hash(v, h)
+    end
+    return h
 end
 
-# -. -- .- ---- - .-. - - .-- . -..... --- -- - .
-# A hash of a collection
 function _col_hash(col, h = 0)
     h = hash(h)
     for el in col
@@ -17,9 +21,9 @@ function _col_hash(col, h = 0)
 end
 
 function _pidfile_path(bo::BlobyObj, args...; B = bloberia(bo))
-    root = bloberiapath(B)
-    _hash = _lock_obj_identity_hash(bo, UInt(0)) 
-    _hash = _col_hash(args, _hash) # custom extra args...
+    root = bloberia_dir(B)
+    _hash = _field_hash(bo, 0)
+    _hash = _col_hash(args, _hash)
     _name = string(typeof(bo), ".", repr(_hash), ".pidfile")
     return joinpath(root, "_locks", _name)
 end
@@ -59,8 +63,8 @@ function Base.unlock(bo::BlobyObj, args...; force = false)
     return unlock(lk; force)
 end
     
-function unlock_batches(B::Bloberia; force = true)
-    for bb in B
-        unlock(bb; force)
-    end
-end
+# function unlock_batches(B::Bloberia; force = true)
+#     for bb in B
+#         unlock(bb; force)
+#     end
+# end

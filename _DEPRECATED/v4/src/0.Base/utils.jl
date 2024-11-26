@@ -81,35 +81,3 @@ function _hashed_id(s::AbstractString, args...)
     end
     return string(s, repr(h0))
 end
-
-# function _field_hash(obj, h = 0)
-#     h = hash(h)
-#     for f in fieldnames(typeof(obj))
-#         v = getfield(obj, f)
-#         _valid_type = false
-#         _valid_type |= isa(v, String)
-#         _valid_type |= isa(v, Symbol)
-#         _valid_type |= isa(v, Integer)
-#         _valid_type || continue
-#         h = hash(v, h)
-#     end
-#     return h
-# end
-
-
-function _recursive_filesize(root0)
-    fsize = 0.0;
-    for (root, _, files) in walkdir(root0)
-        for file in files
-            fsize += filesize(joinpath(root, file)) # path to files
-        end
-    end
-    return fsize
-end
-
-function _getindex(os::OrderedSet, i0)
-    for (i, v) in enumerate(os)
-        i == i0 && return v
-    end
-    throw(BoundsError(os, i0))
-end

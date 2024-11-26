@@ -22,7 +22,7 @@ using Test
             rm(B.root; force = true, recursive = true)
             bb = blobbatch!(B)
             rb = blob!(B)
-            vb = vblob!(bb)
+            vb = blob!(bb)
             
             _dat0 = [1,2,3]
             frame = string(hash(_dat0))
@@ -52,7 +52,7 @@ using Test
             @test _ref1[] == _dat0 .+ 1
 
             # Shadow copy
-            rb = dBlob(rb) # shadow copy
+            rb = raBlob(rb) # shadow copy
             @test isempty(rb.frames)
             _ref1 = withblob!(rb, :get!, frame, "+1") do
                 return "not to load"
@@ -162,7 +162,7 @@ using Test
             for obj in [B, b, bb]
                 println(typeof(obj))
                 
-                mfile = meta_jlspath(obj)
+                mfile = meta_framepath(obj)
                 @test !isfile(mfile)
                 
                 meta0 = getmeta(obj)
@@ -200,7 +200,7 @@ using Test
             @test blobbatch(bref).uuid == bb.uuid
             
             # btBatch
-            tb = vblob!(bb)
+            tb = blob!(bb)
             bref = blobyref(tb)
             @test bloberia(bref).root == B.root
             @test blobbatch(bref).uuid == bb.uuid
@@ -241,7 +241,7 @@ using Test
             rm(B.root; force = true, recursive = true)
             bb = blobbatch!(B)
             rb = blob!(B)
-            vb = vblob!(bb)
+            vb = blob!(bb)
 
             _bos = [B, bb, rb, vb]
             _dt = 1

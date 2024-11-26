@@ -28,11 +28,11 @@
 #   - for reloading you must empty the cache
 #   - maybe have a blob(::Blob) method for shadow copy
 
-# DONE: create a multifile raBlob system
+# DONE: create a multifile dBlob system
 # - Ex: blob!(B, "globals", "ecoli_core", "net0") will create/load "ecoli_core.globals.net0.jls" file
 # - blob!(B, "globals", "ecoli_core", "net0.elep0")
 # - blob!(B, "globals", "ecoli_core") will create/load all files matching
-# - a raBlob might target multiple files
+# - a dBlob might target multiple files
 # - One complexity is that at setindex/serialization you must decide where to write the new data
 # - The goal is to create a frame-like structure to separate heavy objs into diferent files but handle it from a single blob object.
 
@@ -40,7 +40,7 @@
 # - Make random blobs hold its content
 # - that is, move it away from Bloberias
 # - otherwise you can not load other rablobs at the same time
-# think about raBlob as a batch of a single blob, so it needs to have batch+blob functionality
+# think about dBlob as a batch of a single blob, so it needs to have batch+blob functionality
 
 
 # OLD --.- - -- - -- - -
