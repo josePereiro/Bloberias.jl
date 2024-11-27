@@ -32,6 +32,7 @@ module Bloberias
     include("2.BloberiaBase/iterator.jl")
     include("2.BloberiaBase/loading.jl")
     include("2.BloberiaBase/lock.jl")
+    include("2.BloberiaBase/show.jl")
     include("2.BloberiaBase/meta.jl")
     include("2.BloberiaBase/serialize.jl")
 
@@ -45,6 +46,7 @@ module Bloberias
     include("3.BlobBatchBase/lock.jl")
     include("3.BlobBatchBase/meta.jl")
     include("3.BlobBatchBase/serialize.jl")
+    include("3.BlobBatchBase/show.jl")
     include("3.BlobBatchBase/vblob.jl")
 
     #! include 4.AbstractBlobBase

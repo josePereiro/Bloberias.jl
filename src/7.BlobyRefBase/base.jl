@@ -1,6 +1,6 @@
 ## --.--. - .-. .- .--.-.- .- .---- ... . .-.-.-.- 
 # Interface to implement
-_merge_link!(::BlobyRef, rb) = error("Not implemented")
+_merge_link!(::BlobyRef, db) = error("Not implemented")
 readref(::BlobyRef) = error("Not implemented")
 
 ## --.--. - .-. .- .--.-.- .- .---- ... . .-.-.-.- 
@@ -85,41 +85,41 @@ readref(ref::BlobyRef{:vBlob, rT}) where rT = _v_blob(ref)
 readref(ref::BlobyRef{:vBlobVal, rT}) where rT = 
     getindex(_v_blob(ref), ref.link["vb.frame"], ref.link["vb.key"])
 
-## --.--. - .-. .- .--.-.- .- .---- ... . .-.-.-.- 
-# # dBlob
-# function _merge_link!(ref::BlobyRef, rb::dBlob, frame, key)
-#     ref.link["rb.id"] = rb.id
-#     ref.link["rb.frame"] = frame
-#     ref.link["rb.key"] = key
-# end
+# --.--. - .-. .- .--.-.- .- .---- ... . .-.-.-.- 
+# dBlob
+function _merge_link!(ref::BlobyRef, ::dBlob, frame, key)
+    ref.link["db.frame"] = frame
+    ref.link["db.key"] = key
+end
 
-# function blobyref(rb::dBlob)
-#     ref = BlobyRef(:dBlob, dBlob)
-#     _merge_link!(ref, rb.B)
-#     _merge_link!(ref, rb, nothing, nothing)
-#     return ref
-# end
+function blobyref(db::dBlob)
+    ref = BlobyRef(:dBlob, dBlob)
+    _merge_link!(ref, db.batch.B)
+    _merge_link!(ref, db.batch)
+    _merge_link!(ref, db, nothing, nothing)
+    return ref
+end
 
-# function blobyref(rb::dBlob, frame, key; rT = nothing)
-#     if isnothing(rT)
-#         val = getindex(rb, frame, key)
-#         rT = typeof(val)
-#     end
-#     ref = BlobyRef(:raBlobVal, rT)
-#     _merge_link!(ref, rb.B)
-#     _merge_link!(ref, rb, frame, key)
-#     return ref
-# end
+function blobyref(db::dBlob, frame, key; rT = nothing)
+    if isnothing(rT)
+        val = getindex(db, frame, key)
+        rT = typeof(val)
+    end
+    ref = BlobyRef(:dBlobVal, rT)
+    _merge_link!(ref, db.batch.B)
+    _merge_link!(ref, db.batch)
+    _merge_link!(ref, db, frame, key)
+    return ref
+end
 
-# _ra_blob(ref::BlobyRef) = 
-#     blob!(_bloberia(ref), ref.link["rb.id"])
+_ra_blob(ref::BlobyRef) = dblob(_blobbatch(ref))
 
-# bloberia(ref::BlobyRef{:dBlob, dBlob}) = _bloberia(ref)
-# bloberia(ref::BlobyRef{:raBlobVal, rT}) where rT = _bloberia(ref)
-# blob(ref::BlobyRef{:dBlob, dBlob}) = _ra_blob(ref)
-# blob(ref::BlobyRef{:raBlobVal, rT}) where rT  = _ra_blob(ref)
+bloberia(ref::BlobyRef{:dBlob, dBlob}) = _bloberia(ref)
+bloberia(ref::BlobyRef{:dBlobVal, rT}) where rT = _bloberia(ref)
+blob(ref::BlobyRef{:dBlob, dBlob}) = _ra_blob(ref)
+blob(ref::BlobyRef{:dBlobVal, rT}) where rT  = _ra_blob(ref)
 
-# readref(ref::BlobyRef{:dBlob, rT}) where rT = _ra_blob(ref)
-# readref(ref::BlobyRef{:raBlobVal, rT}) where rT = 
-#     getindex(_ra_blob(ref), ref.link["rb.frame"], ref.link["rb.key"])
+readref(ref::BlobyRef{:dBlob, rT}) where rT = _ra_blob(ref)
+readref(ref::BlobyRef{:dBlobVal, rT}) where rT = 
+    getindex(_ra_blob(ref), ref.link["db.frame"], ref.link["db.key"])
     

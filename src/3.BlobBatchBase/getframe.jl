@@ -18,25 +18,29 @@ function getdframe!(bb::BlobBatch, framekey::AbstractString)
     return get!(OrderedDict, bb.dframes, framekey)
 end
 
-# ## --.--. - .-. .- .--.-.- .- .---- ... . .-.-.-.- 
-# # hasframe
-# function hasframe_ram(bb::BlobBatch, frame)
-#     # check ram
-#     frame == "temp" && return true
-#     frame == "meta" && return true
-#     haskey(bb.frames, frame) && return true
-#     return false
-# end
+function getvuuids(bb::BlobBatch)
+    ondemand_loadvuuids!(bb)
+    return bb.vuuids
+end
 
-# function hasframe_disk(bb::BlobBatch, frame)
-#     frame == "temp" && return false
-#     frame == "meta" && return isfile(meta_jlspath(bb))
-#     isfile(vframe_jlspath(bb, frame)) && return true
-#     return false
-# end
+## --.--. - .-. .- .--.-.- .- .---- ... . .-.-.-.- 
+# hasframe
+hasvframe_ram(bb::BlobBatch, frame) =
+    haskey(bb.vframes, frame)
+hasdframe_ram(bb::BlobBatch, frame) =
+    haskey(bb.dframes, frame)
+hasframe_ram(bb::BlobBatch, frame) =
+    hasvframe_ram(bb, frame) || hasdframe_ram(bb, frame)
 
-# function hasframe(bb::BlobBatch, frame)
-#     hasframe_ram(bb, frame) && return true
-#     hasframe_disk(bb, frame) && return true
-#     return false
-# end
+hasvframe_disk(bb::BlobBatch, frame) =
+    isfile(vframe_jlspath(bb, frame))
+hasdframe_disk(bb::BlobBatch, frame) =
+    isfile(dframe_jlspath(bb, frame))
+hasframe_disk(bb::BlobBatch, frame) =
+    hasvframe_disk(bb, frame) || hasdframe_ram(bb, frame)
+
+function hasframe(bb::BlobBatch, frame)
+    hasframe_ram(bb, frame) && return true
+    hasframe_disk(bb, frame) && return true
+    return false
+end

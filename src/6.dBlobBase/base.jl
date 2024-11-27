@@ -3,7 +3,7 @@
 # default is ok
 
 import Base.copy
-Base.copy(rb::dBlob) = dBlob(rb.batch)
+Base.copy(db::dBlob) = dBlob(db.batch)
 
 ## --.--. - .-. .- .--.-.- .- .---- ... . .-.-.-.- 
 # parents
@@ -33,12 +33,8 @@ end
 #     # end
 # end
 
-# ## --.--. - .-. .- .--.-.- .- .---- ... . .-.-.-.- 
-# # setindex
-# function Base.setindex!(b::dBlob, value, frame::AbstractString, key)
-#     _b_frame = getframe!(b, frame) # add frame if required
-#     return setindex!(_b_frame, value, key)
-# end
+## --.--. - .-. .- .--.-.- .- .---- ... . .-.-.-.- 
+
 
 # # import Base.keys
 # # Base.keys(b::dBlob) = keys(_rablob_dict!(b))
@@ -49,10 +45,6 @@ end
 # # import Base.haskey
 # # Base.haskey(b::dBlob, key) = keys(_rablob_dict!(b), key)
 
-# # isempty
-# Base.isempty(rb::dBlob) = isempty(rb.frames)
-
-# function Base.empty!(rb::dBlob) 
-#     empty!(rb.meta)
-#     empty!(rb.frames)
-# end
+# isempty
+Base.isempty(db::dBlob) = isempty(db.batch.dframes)
+Base.empty!(db::dBlob) = empty!(db.batch.dframes)

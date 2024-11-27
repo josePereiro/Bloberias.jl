@@ -56,7 +56,6 @@ function _quoted_join(col, sep)
     return join(strs, sep)
 end
 
-
 function _canonical_bytes(bytes)
     bytes < 1024 && return (bytes, "bytes")
     bytes /= 1024

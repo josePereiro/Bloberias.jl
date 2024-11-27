@@ -19,6 +19,17 @@ function _lock_obj_identity_hash(vb::vBlob, h0)::UInt64
     return h
 end
 
+## --.--. - .-. .- .--.-.- .- .---- ... . .-.-.-.- 
+# ram only
+import Base.empty!
+function empty!(vb::vBlob)
+    bb = vb.batch
+    for (_, framedat) in bb.vframes
+        haskey(framedat, vb.uuid) || continue
+        empty!(framedat[vb,uuid])
+    end
+end
+
 # ## --.--. - .-. .- .--.-.- .- .---- ... . .-.-.-.- 
 # import Base.show
 # function Base.show(io::IO, b::vBlob)
@@ -33,7 +44,7 @@ end
 #     end
 # end
 
-# ## --.--. - .-. .- .--.-.- .- .---- ... . .-.-.-.- 
+## --.--. - .-. .- .--.-.- .- .---- ... . .-.-.-.- 
 # # setindex
 # function Base.setindex!(b::vBlob, value, frame::AbstractString, key)
 #     _b_frame = getframe!(b, frame) # add frame if required

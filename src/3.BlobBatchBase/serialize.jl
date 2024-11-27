@@ -28,10 +28,15 @@ function serialize_dframe!(bb::BlobBatch, frame)
 end
 
 ## --.--. - .-. .- .--.-.- .- .---- ... . .-.-.-.- 
+# serialize all or a particular frame depending on 'id'
 function serialize!(bb::BlobBatch, id = nothing; ignoreempty = false)
     
+    # TODO: Go back to isfull interface better
+    # TODO: This might be to restrictive (Think about it)
+    # - Maybe close individual files
+    # isopen(bb) || error("This batch is closed!!!")
+    
     onserialize!(bb)
-
     mkpath(bb)
     
     # meta
@@ -63,35 +68,3 @@ function serialize!(bb::BlobBatch, id = nothing; ignoreempty = false)
 
     return bb
 end
-
-## --.--. - .-. .- .--.-.- .- .---- ... . .-.-.-.- 
-# import Serialization.serialize
-# function Serialization.serialize(bb::BlobBatch, frame::AbstractString; ignoreempty = true)
-    
-#     onserialize!(bb, frame)
-
-#     dir = batchpath(bb)
-#     mkpath(dir)
-    
-#     # meta
-#     if frame == "meta"
-#         ignore = isempty(bb.meta)
-#         ignore = ignore && ignoreempty 
-#         ignore || serialize_meta!(bb)
-#         return
-#     end
-    
-#     # uuids
-#     if frame == "uuids"
-#         ignore = isempty(bb.vuuids)
-#         ignore = ignore && ignoreempty 
-#         ignore || serialize_vuuids!(bb)
-#     end
-
-#     # frames
-#     ignore = isempty(bb.frames) | isempty(bb.frames[frame])
-#     ignore = ignore && ignoreempty 
-#     ignore || serialize_vframe!(bb, frame)
-
-#     return bb
-# end

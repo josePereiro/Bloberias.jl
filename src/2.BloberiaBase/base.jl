@@ -15,30 +15,6 @@ Base.copy(B::Bloberia) = Bloberia(B.root)
 bloberia(bo::Bloberia) = bo
 
 # ## --.--. - .-. .- .--.-.- .- .---- ... . .-.-.-.- 
-# import Base.show
-# function Base.show(io::IO, B::Bloberia)
-#     print(io, "Bloberia")
-#     _isdir = isdir(B.root)
-#     _pretty_print_pairs(io, 
-#         "\n filesys", 
-#         hasfilesys(B) ? B.root : ""
-#     )
-#     _pretty_print_pairs(io, 
-#         "\n batch(es)", 
-#         _isdir ? batchcount(B) : 0
-#     )
-#     _pretty_print_pairs(io, 
-#         "\n blob(s)", 
-#         _isdir ? vblobcount(B) : 0
-#     )
-#     val, unit = _isdir ? _canonical_bytes(filesize(B)) : (0.0, "bytes")
-#     _pretty_print_pairs(io, 
-#         "\n disk usage", 
-#         _isdir ? string(round(val; digits = 3), " ", unit) : 0.0
-#     )
-# end
-
-# ## --.--. - .-. .- .--.-.- .- .---- ... . .-.-.-.- 
 # # import Base.getindex
 # # # uuid indexing
 
@@ -59,14 +35,14 @@ bloberia(bo::Bloberia) = bo
 # # Base.getindex(B::Bloberia) = blob!(B, BLOBERIA_DEFAULT_RABLOB_ID) # random access blob!
 
 
-# ## --.--. - .-. .- .--.-.- .- .---- ... . .-.-.-.- 
-# # Use, uuids
-# function vblobcount(B::Bloberia, bbid_pt = nothing)
-#     count = 0
-#     bbs = eachbatch(B, bbid_pt)
-#     for bb in bbs
-#         count += vblobcount(bb)
-#     end
-#     return count
-# end
+## --.--. - .-. .- .--.-.- .- .---- ... . .-.-.-.- 
+# Use, uuids
+function vblobcount(B::Bloberia, bbid_pt = nothing)
+    count = 0
+    bbs = eachbatch(B, bbid_pt)
+    for bb in bbs
+        count += vblobcount(bb)
+    end
+    return count
+end
 
