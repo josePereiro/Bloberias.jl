@@ -1,11 +1,11 @@
 function getframe(db::dBlob, frame::AbstractString)
-    ondemand_loaddframe!(db.batch, frame)
-    return getindex(db.batch.dframes, frame)
+    ondemand_loaddframe!(db.bb, frame)
+    return getindex(db.bb.dframes, frame)
 end
 
 function getframe!(db::dBlob, frame::AbstractString)
-    ondemand_loaddframe!(db.batch, frame) # loaded on batch
-    _frame = get!(OrderedDict, db.batch.dframes, frame)
+    ondemand_loaddframe!(db.bb, frame) # loaded on batch
+    _frame = get!(OrderedDict, db.bb.dframes, frame)
     return _frame
 end
 

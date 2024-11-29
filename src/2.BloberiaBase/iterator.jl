@@ -12,11 +12,15 @@ function _eachbatchfile_ch(B::Bloberia, ch_size, sortfun)
 end
 
 # 'preload': frames to preload
-function _bb_from_path(B::Bloberia, path, bbid_pt, preload)
-    _isbatchdir(path) || return nothing
+_startswith(bbid, bbid_prefix) = startswith(bbid, bbid_prefix) 
+_startswith(bbid, bbid_prefix::Nothing) = true
+
+function _bb_from_path(B::Bloberia, path, bbid_prefix, preload)
+    _isbatchdir(B, path) || return nothing
     bbid = basename(path)
     # filter
-    _ismatch(bbid_pt, bbid) || return nothing
+    # _ismatch(bbid_prefix, bbid) || return nothing
+    _startswith(bbid, bbid_prefix) || return nothing
     bb = BlobBatch(B, bbid)
     for frame in preload
         ondemand_loadvframe!(bb, frame)
@@ -28,7 +32,7 @@ end
 # returns a channel which iterates for all batches 
 # you can filter them
 # you can control the order
-function _eachbatch_th(B::Bloberia, bbid_pt = nothing; 
+function _eachbatch_th(B::Bloberia, bbid_prefix = nothing; 
         sortfun = identity, 
         ch_size::Int = 1,
         n_tasks::Int = nthreads(),
@@ -40,7 +44,7 @@ function _eachbatch_th(B::Bloberia, bbid_pt = nothing;
         file_ch = _eachbatchfile_ch(B, n_tasks, sortfun)
         @sync for _ in 1:n_tasks
             @spawn for path in file_ch
-                bb = _bb_from_path(B, path, bbid_pt, preload)
+                bb = _bb_from_path(B, path, bbid_prefix, preload)
                 isnothing(bb) && continue
                 put!(_ch, bb)
             end
@@ -48,7 +52,7 @@ function _eachbatch_th(B::Bloberia, bbid_pt = nothing;
     end # Channel
 end
 
-function _eachbatch_ser(B::Bloberia, bbid_pt = nothing; 
+function _eachbatch_ser(B::Bloberia, bbid_prefix = nothing; 
         sortfun = identity, 
         ch_size::Int = 1,
         preload = []
@@ -59,23 +63,23 @@ function _eachbatch_ser(B::Bloberia, bbid_pt = nothing;
     return Channel{BlobBatch}(ch_size) do _ch
         file_ch = _eachbatchfile_ch(B, 1, sortfun)
         for path in file_ch
-            bb = _bb_from_path(B, path, bbid_pt, preload)
+            bb = _bb_from_path(B, path, bbid_prefix, preload)
             isnothing(bb) && continue
             put!(_ch, bb)
         end
     end
 end
 
-function eachbatch(B::Bloberia, bbid_pt = nothing; 
+function eachbatch(B::Bloberia, bbid_prefix = nothing; 
         sortfun = identity, 
          ch_size::Int = get(getmeta(B), "eachbatch.ch_size", 1),
         n_tasks::Int = get(getmeta(B), "eachbatch.n_tasks", nthreads()),
         preload = get(getmeta(B), "eachbatch.preload", [])
     )
     if n_tasks > 1
-        return _eachbatch_th(B::Bloberia, bbid_pt; sortfun, ch_size, n_tasks, preload)
+        return _eachbatch_th(B::Bloberia, bbid_prefix; sortfun, ch_size, n_tasks, preload)
     else
-        return _eachbatch_ser(B::Bloberia, bbid_pt; sortfun, ch_size, preload)
+        return _eachbatch_ser(B::Bloberia, bbid_prefix; sortfun, ch_size, preload)
     end
 end
 
@@ -94,13 +98,13 @@ function _foreach_batch_chless(f::Function, B::Bloberia)
     return nothing
 end
 
-function _foreach_batch_ser(f::Function, B::Bloberia, bbid_pt = nothing; 
+function _foreach_batch_ser(f::Function, B::Bloberia, bbid_prefix = nothing; 
         sortfun = identity, 
         ch_size::Int = 1, 
         preload = [], 
         locked = false
     )
-    bbs = _eachbatch_ser(B, bbid_pt; sortfun, ch_size, preload)
+    bbs = _eachbatch_ser(B, bbid_prefix; sortfun, ch_size, preload)
     for bb in bbs
         if locked
             try; lock(bb)
@@ -117,7 +121,7 @@ function _foreach_batch_ser(f::Function, B::Bloberia, bbid_pt = nothing;
 end
 
 # .-- .- -.-.-.--. ...---. . . . -- .--. -. -. -.
-function _foreach_batch_th(f::Function, B::Bloberia, bbid_pt = nothing; 
+function _foreach_batch_th(f::Function, B::Bloberia, bbid_prefix = nothing; 
         sortfun = identity, 
         ch_size::Int = 1, 
         n_tasks::Int = nthreads(), 
@@ -126,7 +130,7 @@ function _foreach_batch_th(f::Function, B::Bloberia, bbid_pt = nothing;
     )
 
     # channel
-    ch = _eachbatch_ser(B, bbid_pt; sortfun, ch_size, preload)
+    ch = _eachbatch_ser(B, bbid_prefix; sortfun, ch_size, preload)
 
     # spawn
     @sync for _ in 1:n_tasks
@@ -155,7 +159,7 @@ function _foreach_batch_th(f::Function, B::Bloberia, bbid_pt = nothing;
 end
 
 # the execution of `f()` is in concurrent if n_tasks > 1
-function foreach_batch(f::Function, B::Bloberia, bbid_pt = nothing; 
+function foreach_batch(f::Function, B::Bloberia, bbid_prefix = nothing; 
         sortfun = identity, 
         ch_size::Int = get(getmeta(B), "foreach_batch.ch_size", nthreads()), 
         n_tasks::Int = get(getmeta(B), "foreach_batch.n_tasks", nthreads()), 
@@ -163,9 +167,9 @@ function foreach_batch(f::Function, B::Bloberia, bbid_pt = nothing;
         locked = get(getmeta(B), "foreach_batch.preload", false),
     )
     if n_tasks > 1
-        _foreach_batch_th(f, B, bbid_pt; sortfun, ch_size, n_tasks, preload, locked)
+        _foreach_batch_th(f, B, bbid_prefix; sortfun, ch_size, n_tasks, preload, locked)
     else
-        _foreach_batch_ser(f, B, bbid_pt; sortfun, ch_size, preload, locked)
+        _foreach_batch_ser(f, B, bbid_prefix; sortfun, ch_size, preload, locked)
     end
     return nothing
 end

@@ -13,10 +13,20 @@ function batchpath(bb::BlobBatch)
     end
 end
 
-meta_jlspath(bb::BlobBatch) = _bb_meta_jlspath(batchpath(bb))
-vuuids_jlspath(bb::BlobBatch) = _bb_vuuids_jlspath(batchpath(bb))
-vframe_jlspath(bb::BlobBatch, frame) = _bb_vframe_jlspath(batchpath(bb), frame)
-dframe_jlspath(bb::BlobBatch, frame) = _bb_dframe_jlspath(batchpath(bb), frame)
+meta_jlspath(bb::BlobBatch) = get!(bb.temp, "meta_jlspath") do
+    _bb_meta_jlspath(batchpath(bb))
+end
+
+vuuids_jlspath(bb::BlobBatch) = get!(bb.temp, "vuuids_jlspath") do
+    _bb_vuuids_jlspath(batchpath(bb))
+end
+vframe_jlspath(bb::BlobBatch, frame) = get!(bb.temp, string("vframe_jlspath.", frame)) do
+    _bb_vframe_jlspath(batchpath(bb), frame)
+end
+dframe_jlspath(bb::BlobBatch, frame) = get!(bb.temp, string("dframe_jlspath.", frame)) do
+    _bb_dframe_jlspath(batchpath(bb), frame)
+end
+
 
 ## --.--. - .-. .- .--.-.- .- .---- ... . .-.-.-.- 
 # Utils
@@ -30,11 +40,21 @@ function _joinpath_err(bb::BlobBatch, as...)
     return _joinpath_errless(bb, as...)
 end
 
-function _isbatchdir(path)
-    isdir(path) || return false
-    isfile(_bb_meta_jlspath(path)) && return true
-    isfile(_bb_vuuids_jlspath(path)) && return true
-    return false
+# TODO: Think ablut it, 
+# - allow empty dirs
+# - maybe just check that your parent is a Bloberia forlder
+# function _isbatchdir(path)
+    # isdir(path) || return false
+    # isfile(_bb_meta_jlspath(path)) && return true
+    # isfile(_bb_vuuids_jlspath(path)) && return true
+#     return false
+# end
+
+_isbatchdir(path) = isdir(path)
+
+function _isbatchdir(B::Bloberia, path)
+    root = bloberiapath(B)
+    return startswith(path, root)
 end
 
 _bb_meta_jlspath(root::String) = joinpath(root, "meta.jls")

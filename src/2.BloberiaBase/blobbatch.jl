@@ -10,6 +10,7 @@ end
 function blobbatch!(B::Bloberia, bbid0) # potentially new
     return BlobBatch(B, bbid0)
 end
+blobbatch!(B::Bloberia) = blobbatch!(B, BLOBERIA_DEFAULT_BBID)
 
 ## --.--. - .-. .- .--.-.- .- .---- ... . .-.-.-.- 
 # WARNING: Order is not warranted
@@ -25,19 +26,31 @@ end
 
 
 ## --.--. - .-. .- .--.-.- .- .---- ... . .-.-.-.- 
-# TODO: Use a close/open or readonly interface better... Thin about it...
-# # look for non full batch
-# # or give a new one
-# function headbatch!(B::Bloberia, group::AbstractString)::BlobBatch
-#     # find head
-#     for bb in eachbatch(B, group)
-#         isfullbatch(bb) && continue
-#         return bb
-#     end
-#     return blobbatch!(B, group)
-# end
-# headbatch!(B::Bloberia) = headbatch!(B, BLOBERIA_DEFAULT_BATCH_GROUP)
+# look for non full batchs
+function rbbid(prefix::String) 
+    prefix = isempty(prefix) ? BLOBERIA_DEFAULT_BBID_PREFIX : prefix
+    string(prefix, ".", uuid_str())
+end
 
+function headbatch(B::Bloberia, prefix = "")::BlobBatch 
+    # find head
+    for bb in eachbatch(B, prefix)
+        isfullbatch(bb) && continue
+        return bb
+    end
+    # or error
+    error("No empty batch found!")
+end
+
+function headbatch!(B::Bloberia, prefix = "", newid = rbbid(prefix))::BlobBatch
+    # find head
+    for bb in eachbatch(B, prefix)
+        isfullbatch(bb) && continue
+        return bb
+    end
+    # or new
+    return blobbatch!(B, newid)
+end
 
 ## --.--. - .-. .- .--.-.- .- .---- ... . .-.-.-.- 
 function batchcount(B::Bloberia)

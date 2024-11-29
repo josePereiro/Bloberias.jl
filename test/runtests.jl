@@ -3,9 +3,10 @@ using Base.Threads
 using Test
 
 ## .-- . -. - .--..- -- .- - --..-.-.- .- -.--
+# TODO: Use aqua
+
+## .-- . -. - .--..- -- .- - --..-.-.- .- -.--
 @testset "Bloberias.jl" begin
-    
-    # TODO: update tests
 
     ## .-- . -. - .--..- -- .- - --..-.-.- .- -.--
     B_ROOT = joinpath(tempname(), "db")
@@ -20,14 +21,14 @@ using Test
         let
             B = Bloberia(B_ROOT)
             rm(B)
-            bb = blobbatch!(B, "globals")
+            bb = blobbatch!(B) # default
         
             _lim = 11
             bb_meta = getmeta(bb)
             bb_meta["config.vblobs.lim"] = _lim
             while !isfullbatch(bb)
                 b = rvblob!(bb)
-                b["0", "rand"] = rand()
+                b["rand"] = rand()
             end
             @test vblobcount(bb) == _lim
         end
@@ -37,7 +38,7 @@ using Test
         let
             B = Bloberia(B_ROOT)
             rm(B.root; force = true, recursive = true)
-            bb = blobbatch!(B, "0")
+            bb = blobbatch!(B, "custom")
             db = dblob(bb)
             vb = vblob!(bb, 0)
 
@@ -54,7 +55,7 @@ using Test
             # check again but from loading
             # empty!
             empty!(db)
-            @test isempty(db.batch.dframes)
+            @test isempty(db.bb.dframes)
             _ref1 = withblob!(db, :get!, frame, "+1") do
                 return "not to load"
             end
@@ -91,87 +92,111 @@ using Test
         end
         
         ## .-- . -. - .--..- -- .- - --..-.-.- .- -.--
+        # Test refs
+        let
+            B = Bloberia(B_ROOT)
+            rm(B; force = true)
+            bb = blobbatch!(B, "globals")
+            rc = RefCacher()
+            b = dblob(bb)
+            for b in [dblob(bb), vblob!(bb, 0)]
+                token = rand()
+                b_ref = withblob!(b, :set!, "0", "key") do
+                    token
+                end
+                serialize!(bb)
+                serialize!(B)
+                
+                @test deref!(rc, b_ref) == token
+                @test deref(b_ref) == token
+                @test deref(B, b_ref) == token
+                @test deref(bb, b_ref) == token
+
+                @test b_ref[] == token
+                @test rc[b_ref] == token
+                @test bb[b_ref] == token
+            end
+        end
+
+        # TODO: update tests
+        ## .-- . -. - .--..- -- .- - --..-.-.- .- -.--
         # blobbatches interface
         let
             B = Bloberia(B_ROOT)
             rm(B; force = true)
-            
-            break # DEV HEAD
 
-            bb0 = headbatch!(B)
+            bb0 = headbatch!(B, "bb0")
             bb_lim = 100
-            setmeta!(B, "batches.blobs.lim", bb_lim)
+            vbloblim!(bb0, bb_lim)
             
             # write to ram
             _token = rand()
             for it in 1:(bb_lim ÷ 2)
-                b = blob!(bb0)
-                b["it"] = it # default frame 0
-                @test b["it"] == it # test getindex/setindex!
-                b["1", "_token"] = _token # custom frame 0
-                @test b["1", "_token"] == _token # test getindex/setindex!
+                b = rvblob!(bb0)
+                b["it"] = it # default frame
+                b["f0", "_token"] = _token 
+                @test b["f0", "_token"] == _token # test getindex/setindex!
                 isfullbatch(bb0) && break
             end
             @test !isfullbatch(bb0)
-            @test hasframe(bb0, "1")
+            @test hasframe(bb0, "f0")
+            @test batchcount(B) == 0
             serialize!(bb0)
+            @test batchcount(B) == 1
             
             _bbs = collect(eachbatch(B))
             @test length(_bbs) == 1
             
-            bb1 = headbatch!(B) # new non full batch
-            @test hasframe(bb1, "1")
-            @test bb0.uuid == bb1.uuid
+            bb1 = headbatch!(B, "bb0") # take the same full batch
+            @test hasframe(bb1, "f0")
+            @test batchpath(bb0) == batchpath(bb1)
             @test length(bb0) == length(bb1)
 
             # test load/getindex
             # it must keep the order
             for (it, b) in enumerate(bb1)
-                @test b["it"] == it 
-                @test b["1", "_token"] == _token
+                @test b["it"] == it # default frame
+                @test b["f0", "_token"] == _token
             end
             
-            bb2 = blobbatch!(B, "0") # new batch
+            bb2 = blobbatch!(B, "bb2") # new batch
             @test length(bb2) == 0
-            @test bb0.uuid != bb2.uuid
+            @test batchpath(bb0) != batchpath(bb2)
             @test length(bb2) != length(bb1)
 
             # write more
             for it in 1:(bb_lim * 10)
-                b = blob!(bb0)
+                b = rvblob!(bb0)
                 b["it"] = it # deault frame
                 isfullbatch(bb0) && break
             end
             @test isfullbatch(bb0)
             @test length(bb0) == bb_lim
+            @test batchcount(B) == 1
             serialize!(bb0)
-
-            bb3 = headbatch!(B)
+            @test batchcount(B) == 1
+            
+            # it should not find bb0 (the only serialized)
+            bb3 = headbatch!(B, "bb")
             @test length(bb3) == 0
-            @test bb0.uuid != bb3.uuid
+            @test batchpath(bb0) != batchpath(bb2)
             @test length(bb0) != length(bb3)
-
         end
 
         ## .-- . -. - .--..- -- .- - --..-.-.- .- -.--
-        # raBlobs
+        # dBlobs
         let
             B = Bloberia(B_ROOT)
             rm(B; force = true)
+            bb = blobbatch!(B) # default
 
-            rb1 = blob!(B, "test")
-            serialize!(rb1) 
-            rb2 = blob(B, "test")
-            
-            # default frame 
-            rb1["bla"] = rand(5,5)
-            serialize!(rb1) 
-            @test rb1["bla"] == rb2["bla"]
+            db1 = dblob(bb) 
+            db2 = dblob(bb)
             
             # custom frame ("blo")
-            rb1["blo", "bla"] = rand(5,5)
-            serialize!(rb1) 
-            @test rb2["blo", "bla"] == rb1["blo", "bla"]
+            db1["blo", "bla"] = rand(5,5)
+            serialize!(bb, "blo") 
+            @test db2["blo", "bla"] == db1["blo", "bla"]
         end
 
 
@@ -180,82 +205,33 @@ using Test
         let
             B = Bloberia(B_ROOT)
             rm(B; force = true)
-            b = blob!(B)
             bb = blobbatch!(B, "0")
             
-            for obj in [B, b, bb]
+            for obj in [B, bb]
                 println(typeof(obj))
                 
                 mfile = meta_jlspath(obj)
                 @test !isfile(mfile)
                 
-                meta0 = getmeta(obj)
+                meta = getmeta(obj)
                 _dat0 = rand(10)
-                setmeta!(obj, "bla", _dat0)
+                meta["bla"] = _dat0
                 @test !isfile(mfile)
-                @test all(meta0["bla"] .== getmeta(obj, "bla"))
+                @test all(meta["bla"] .== _dat0)
 
                 empty!(getmeta(obj))
-                meta1 = getmeta(obj)
-                @test isempty(meta1) # no disk copy yet
+                meta = getmeta(obj)
+                @test isempty(meta) # no disk copy yet
                 
-                setmeta!(obj, "bla", _dat0)
+                # serialize
+                meta["bla"] = _dat0
                 serialize!(obj; ignoreempty = false) # create disk copy
-                empty!(getmeta(obj))
-                @test all(getmeta(obj, "bla") .== _dat0) # data is loaded on demand
-            end
-        end
 
-        # BlobyRef
-        let
-            B = Bloberia(B_ROOT)
-            rm(B.root; force = true, recursive = true)
-    
-            # Bloberia
-            bref = blobyref(B)
-            @test bref[].root == B.root
-            @test bloberia(bref).root == B.root
-            
-            # BlobBatch
-            bb = blobbatch!(B, "0")
-            bref = blobyref(bb)
-            @test bloberia(bref).root == B.root
-            @test bref[].uuid == bb.uuid
-            @test blobbatch(bref).uuid == bb.uuid
-            
-            # btBatch
-            tb = vblob!(bb)
-            bref = blobyref(tb)
-            @test bloberia(bref).root == B.root
-            @test blobbatch(bref).uuid == bb.uuid
-            @test bref[].uuid == tb.uuid
-            @test blob(bref).uuid == tb.uuid
-            
-            # btBatchVal
-            tb["val"] = 1
-            serialize!(tb)
-            @test bloberia(bref).root == B.root
-            @test blobbatch(bref).uuid == bb.uuid
-            @test blob(bref).uuid == tb.uuid
-            bref = blobyref(tb, "val")
-            @test bref[] == tb["val"]
-            
-            # raBatch
-            db = blob!(B)
-            bref = blobyref(db)
-            @test bloberia(bref).root == B.root
-            @test bref[].id == db.id
-            @test blob(bref).id == db.id
-            
-            # raBatchVal
-            db["val"] = 1
-            serialize!(db)
-            @test bloberia(bref).root == B.root
-            @test blob(bref).id == db.id
-            bref = blobyref(db, "val")
-            @test bref[] == db["val"]
-            
-            nothing
+                # test load
+                empty!(meta)
+                meta = getmeta(obj) # data is loaded on demand
+                @test all(meta["bla"] .== _dat0) 
+            end
         end
 
         ## .-- . -. - .--..- -- .- - --..-.-.- .- -.--
@@ -264,8 +240,8 @@ using Test
             B = Bloberia(B_ROOT)
             rm(B.root; force = true, recursive = true)
             bb = blobbatch!(B, "0")
-            db = blob!(B)
-            vb = vblob!(bb)
+            db = dblob(bb)
+            vb = vblob!(bb, 0)
 
             _bos = [B, bb, db, vb]
             _dt = 1

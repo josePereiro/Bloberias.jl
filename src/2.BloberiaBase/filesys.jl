@@ -30,8 +30,8 @@ Base.joinpath(B::Bloberia, as...) = _joinpath_err(B, as...)
 import Base.rm
 Base.rm(B::Bloberia; force = true) = rm(B.root; force,  recursive = true)
 
-function Base.rm(B::Bloberia, bbid_pt; force = true)
-    for bb in eachbatch(B, bbid_pt)
+function Base.rm(B::Bloberia, bbid_prefix; force = true)
+    for bb in eachbatch(B, bbid_prefix)
         rm(bb; force)
     end
 end

@@ -17,8 +17,7 @@ function vblob!(bb::BlobBatch, uuid::Integer)
     b = vBlob(bb, uuid)
     vuuids = getvuuids(bb)
     uuid ∈ vuuids && return b
-    #TODO Use isfull interface
-    isopen(bb) || error("bb is closed!!!")
+    isfullbatch(bb) && error("The batch is full, see 'vblobcount' and 'vbloblim'")
     push!(bb.vuuids, uuid)
     return b
 end

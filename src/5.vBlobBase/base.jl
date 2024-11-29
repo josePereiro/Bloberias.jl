@@ -4,16 +4,16 @@
 
 # shallow copy 
 import Base.copy
-Base.copy(bt::vBlob) = vBlob(bt.batch, bb.uuid)
+Base.copy(bt::vBlob) = vBlob(bt.bb, bb.uuid)
 
 ## --.--. - .-. .- .--.-.- .- .---- ... . .-.-.-.- 
-blobbatch(b::vBlob) = b.batch
+blobbatch(b::vBlob) = b.bb
 bloberia(b::vBlob) = bloberia(blobbatch(b))
 
 ## --.--. - .-. .- .--.-.- .- .---- ... . .-.-.-.- 
 # lock
 function _lock_obj_identity_hash(vb::vBlob, h0)::UInt64
-    h = _lock_obj_identity_hash(vb.batch, h0)
+    h = _lock_obj_identity_hash(vb.bb, h0)
     h = hash(:vBlob, h)
     h = hash(vb.uuid, h)
     return h
@@ -23,7 +23,7 @@ end
 # ram only
 import Base.empty!
 function empty!(vb::vBlob)
-    bb = vb.batch
+    bb = vb.bb
     for (_, framedat) in bb.vframes
         haskey(framedat, vb.uuid) || continue
         empty!(framedat[vb,uuid])
@@ -34,7 +34,7 @@ end
 # import Base.show
 # function Base.show(io::IO, b::vBlob)
 #     print(io, "vBlob(", repr(b.uuid), ")")
-#     for (frame, _bb_frame) in b.batch.vframes
+#     for (frame, _bb_frame) in b.bb.vframes
 #         haskey(_bb_frame, b.uuid) || continue
 #         _b_frame = _bb_frame[b.uuid]
 #         isempty(_b_frame) && continue

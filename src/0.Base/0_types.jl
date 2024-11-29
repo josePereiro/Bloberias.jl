@@ -109,14 +109,14 @@ abstract type AbstractBlob <: BlobyObj end
 ## .-- . -. - .--..- -- .- - --..-.-.- .- -.--
 # This is an object defined across different vframes
 struct vBlob <: AbstractBlob
-    batch::BlobBatch       # owner batch
+    bb::BlobBatch       # owner batch
     uuid::UInt128          # unique universal id
 end
 
 ## .-- . -. - .--..- -- .- - --..-.-.- .- -.--
 # Just a wrapper of bb.dframes
 struct dBlob <: AbstractBlob
-    batch::BlobBatch       # owner batch
+    bb::BlobBatch       # owner batch
 end
 
 
@@ -125,6 +125,13 @@ end
 struct BlobyRef{lT, rT}
     link::Dict{String, Any}  # All coordinates   
     BlobyRef(ltype::Symbol, rtype::DataType) = new{ltype, rtype}(Dict())
+end
+
+## --.--. - .-. .- .--.-.- .- .---- ... . .-.-.-.- 
+# allow ref rolling
+struct RefCacher
+    bb_cache::Dict{String, BlobBatch}   # path => bb
+    RefCacher() = new(Dict())
 end
 
 ## --.--. - .-. .- .--.-.- .- .---- ... . .-.-.-.- 

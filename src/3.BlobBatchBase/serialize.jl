@@ -29,12 +29,11 @@ end
 
 ## --.--. - .-. .- .--.-.- .- .---- ... . .-.-.-.- 
 # serialize all or a particular frame depending on 'id'
-function serialize!(bb::BlobBatch, id = nothing; ignoreempty = false)
+function serialize!(bb::BlobBatch, id = nothing; ignoreempty = false, force = false)
     
-    # TODO: Go back to isfull interface better
-    # TODO: This might be to restrictive (Think about it)
-    # - Maybe close individual files
-    # isopen(bb) || error("This batch is closed!!!")
+    # Is full interface
+    isoverflowed(bb) && 
+        error("The batch is overflowed, check 'vblobcount' and 'vbloblim'")
     
     onserialize!(bb)
     mkpath(bb)

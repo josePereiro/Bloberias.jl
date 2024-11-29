@@ -22,7 +22,7 @@ function serialize_meta!(B::Bloberia)
 end
 
 ## --.--. - .-. .- .--.-.- .- .---- ... . .-.-.-.- 
-function serialize!(B::Bloberia)
+function serialize!(B::Bloberia; ignoreempty = false)
     
     mkpath(B)
 
@@ -30,7 +30,8 @@ function serialize!(B::Bloberia)
     onserialize!(B)
 
     # meta
-    serialize_meta!(B)
+    ignore = ignoreempty && isempty(B.meta)
+    ignore || serialize_meta!(B)
 
     return B
 end

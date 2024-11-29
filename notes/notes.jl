@@ -1,3 +1,14 @@
+#TODO: create relative references..
+# - given a batch find blob/value
+# - this way I do not need to store the full path to the batch
+# - syntax ideas: bb[ref]
+# - also for avoiding reloading frames...
+#   - for this maybe we need a new object, ej: RefCacher
+#   - syntax ideas: rc[ref]
+#   - if the ref does not point to the cached batch it loads it...
+#   - otherwise it reuse the cached one
+#   - the cache size can be configured. 
+
 # IDEA: Generalize a BlobBatch
 # - A BlobBatch can have a vector frame or a random access frame interface
 #   - It is just an extention of the meta frame capability

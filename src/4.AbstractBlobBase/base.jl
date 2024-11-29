@@ -11,6 +11,8 @@ function Base.setindex!(b::AbstractBlob, value, frame::AbstractString, key)
     _b_frame = getframe!(b, frame) # add frame if required
     return setindex!(_b_frame, value, key)
 end
+Base.setindex!(b::AbstractBlob, value, key) = 
+    setindex!(b, value, BLOBBATCH_DEFAULT_FRAME_NAME, key)
 
 ## --.--. - .-. .- .--.-.- .- .---- ... . .-.-.-.- 
 # getindex
@@ -29,11 +31,7 @@ Base.getindex(b::AbstractBlob, frame::Vector{String}) =
     getframe(b, first(frame))
 
 ## --.--. - .-. .- .--.-.- .- .---- ... . .-.-.-.- 
-Base.setindex!(b::AbstractBlob, value, key) = 
-    setindex!(b, value, BLOBBATCH_DEFAULT_FRAME_NAME, key)
-
-# ## --.--. - .-. .- .--.-.- .- .---- ... . .-.-.-.- 
-# # import Base.get
+# import Base.get
 Base.get(b::AbstractBlob, frame::AbstractString, key, default) = 
     Base.get(getframe(b, frame), key, default)
 Base.get(f::Function, b::AbstractBlob, frame::AbstractString, key) = 

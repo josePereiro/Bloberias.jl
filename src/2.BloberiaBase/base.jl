@@ -1,6 +1,7 @@
 ## --.--. - .-. .- .--.-.- .- .---- ... . .-.-.-.- 
 const BLOBERIA_DEFAULT_RABLOB_ID = "0"
-const BLOBERIA_DEFAULT_BATCH_GROUP = "0"
+const BLOBERIA_DEFAULT_BBID = "0"
+const BLOBERIA_DEFAULT_BBID_PREFIX = "0"
 const BLOBERIA_DEFAULT_FRAME_NAME = "0"
 
 ## --.--. - .-. .- .--.-.- .- .---- ... . .-.-.-.- 
@@ -37,9 +38,9 @@ bloberia(bo::Bloberia) = bo
 
 ## --.--. - .-. .- .--.-.- .- .---- ... . .-.-.-.- 
 # Use, uuids
-function vblobcount(B::Bloberia, bbid_pt = nothing)
+function vblobcount(B::Bloberia, bbid_prefix = nothing)
     count = 0
-    bbs = eachbatch(B, bbid_pt)
+    bbs = eachbatch(B, bbid_prefix)
     for bb in bbs
         count += vblobcount(bb)
     end

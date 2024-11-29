@@ -16,16 +16,14 @@ function _trydeserialize(path; onerr = _noop)
     return _deserialize(path; onerr)
 end
 
-_ismatch(f::Function, y) = f(y) === true
-_ismatch(y, f::Function) = _ismatch(f, y)
-_ismatch(x::AbstractChar, y::AbstractString) = isequal(string(x), y)
-_ismatch(x::AbstractString, y::AbstractChar) = _ismatch(y, x)
-_ismatch(r::Regex, y::String) = !isnothing(match(r, y))
-_ismatch(r::Regex, y) = _ismatch(r, string(y))
-_ismatch(y, r::Regex) = _ismatch(r, y)
-_ismatch(x, y) = isequal(x, y)
-_ismatch(x) = Base.Fix1(_ismatch, x)
+# _ismatch(pt, str)
+_ismatch(pt::Function, y) = pt(y) === true
+_ismatch(pt::AbstractChar, y::AbstractString) = isequal(string(pt), y)
+_ismatch(pt::AbstractString, y::AbstractString) = startswith(y, pt)
+_ismatch(pt::Regex, y::String) = !isnothing(match(pt, string(y)))
+_ismatch(pt) = Base.Fix1(_ismatch, pt)
 _ismatch(::Nothing, y) = true  # pass
+_ismatch(pt, y) = isequal(pt, y)
 
 function _mkpath(path)
     dir = dirname(path)
