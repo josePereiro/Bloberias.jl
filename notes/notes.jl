@@ -1,29 +1,118 @@
-#TODO: create relative references..
-# - given a batch find blob/value
-# - this way I do not need to store the full path to the batch
-# - syntax ideas: bb[ref]
-# - also for avoiding reloading frames...
+# v6 Automatic description of batch content
+# - Add time stamp
+# - add generating script src
+
+# v6 DESIGN data point centric view (ContextDB)
+# - a vblob can be viewed as an entry in a ContextDB was
+# - you can have a search system for matching contexts
+# - This indexing system act olso as a validator that hte data 
+# you are loading is the one you are refering too
+#   - it should fail if more than one is found (ambiguity)
+# - It also allows you to have multiple version of scripts
+# storing data in the same Bloberia
+# - The main problem is when a new context coord is introduced
+# which is equivaent to say that before was constant
+#   - back propagating new context should be implemented
+
+# v6 DESIGN dict-like interface
+# - B["frame", "key1", "key2"]
+# - B["frame", "key1/key2"]
+# - The frame part is the only structure required by the file system
+# - Then you can use a url id for accessing sub 'folders'
+
+# v6 DESIGN herarchical struct
+# - blob can access different frames 
+#   - private: a particular uuid content on a vframe
+#   - bb global: the bb dframe
+#   - B global: the B dframe
+# - that is, we only needs one type of blob
+# - pro: data is accessible from a blob and it is compartmentailize
+#   - only local and parent frames re accesible from a blob
+# con?: B will have frame data (it already have meta)
+# - frame type can be resolve at loading either from the file name, structure, or meta data serialized in the frame.
+#   - I do prefer the serialize part (simplified filesys?)
+# - con?: meta will be a reserved name for a frame
+#   - It is a build in dframe
+# pro: a simple addres system
+# - B/frame (a frame from the B)
+# - bb/frame (a frame from the bb or B)
+# - b/frame (a frame from b, bb or B)
+
+# v6 DISIGN seek and load referencing
+# - I can use a uuid for identifing each object in the B
+# - a link can just be uuid, then B[?, uuid] will trigger a search and 
+# retrive the object. 
+
+# v6 DESIGN handling ram/disk versions
+# - most standard operations should be done in the ram version only, 
+#   at least there is a good reason to do it also in the disk version.
+# - The ram version is a 'stage' space
+# - the main trade offs are disk reading cost and ram/disk syncronization.
+# - some ram only opperations:
+#   - isempty, empty!, setindex!, length, ...
+# - some ram and disk opperations:
+#   - delete!, hasframe, serialized! (sync), etc
+# - disk/ram syncronization
+#   - serialize! (ram -> disk)
+#   - force_load! (disk -> ram)
+#   - ondemand_load! (disk -> ram if ram is missing)
+#   - delete! (delete both ram and disk)
+
+# v6 DESIGN
+# - create 'base' interface
+#   - base is built for precitiona and experessivity. 
+#   - clear simgle porpuse methods/tools
+#   - for instance:
+#      - only reimplement Basa.X methods that do presiscesly 
+#        what it is intended. like Base.show
+#      - contains as few defaults as possible.
+# - create 'sugar' interface
+#   - 'sugar' is built for conviniency 
+#   - contain the shortcuts and more opinative implementations
+
+# v6 DESIGN
+# - lock all serializations and deserializations of frames.
+
+# v6 DESIGN
+# - Create a callback interface for files events
+# - usage case:
+#   - create a refresh/track frames interface
+#   - let say Im mostly interesting on having the last version of a frame 
+
+# v6 DESIGN 
+# - create a merge interface
+#   - merge new data -> ram = U(ram, new data) but ram overwrites
+#   - merge ram -> new data ...
+#   - merge ram -> disk ...
+#   - merge disk -> ram ...
+#   - merge new data -> ram -> disk ...
+
+
+# DONE: create relative references..
+# - DONE given a batch find blob/value (relative paths)
+#   - this way I do not need to store the full path to the batch
+#   - syntax ideas: bb[ref]
+# - DONE also for avoiding reloading frames...
 #   - for this maybe we need a new object, ej: RefCacher
 #   - syntax ideas: rc[ref]
 #   - if the ref does not point to the cached batch it loads it...
 #   - otherwise it reuse the cached one
 #   - the cache size can be configured. 
 
-# IDEA: Generalize a BlobBatch
+# IDEA/DONE: Generalize a BlobBatch
 # - A BlobBatch can have a vector frame or a random access frame interface
 #   - It is just an extention of the meta frame capability
-#   - 
 
 # IDEA
 # - Think about a different interface to access the ram version and the disk version.
 # - The current interface is just a default which might be too opinative.
 # - Make it explicit first and then create the defaults. 
 
-# TODO: foreach_rablobs
+# DONE: foreach_rablobs
 
-# TODO: put blobbatches groups into folders?
+# DEPRECATED: put blobbatches groups into folders?
 
-# TODO: create bloberia(::AbstractBlob), etc kind of accessor interfaces
+# DONE: create bloberia(::AbstractBlob), etc kind of accessor interfaces
 
 # DONE: BlobyRef
 # - An object containuing all data for pointing to a BlobyObject/Val
@@ -32,14 +121,16 @@
 
 # TODO: Work on type stability
 
-# TODO: Dry the code: a lot of code repetition
+# DONE: Dry the code: a lot of code repetition
 
 # TODO: Define/Document the load on demand behaviour 
 #   - load if it is missing on ram
 #   - for reloading you must empty the cache
 #   - maybe have a blob(::Blob) method for shadow copy
 
-# DONE: create a multifile dBlob system
+# OLD --.- - -- - -- - -
+
+# DEPRECATED/DONE: create a multifile dBlob system
 # - Ex: blob!(B, "globals", "ecoli_core", "net0") will create/load "ecoli_core.globals.net0.jls" file
 # - blob!(B, "globals", "ecoli_core", "net0.elep0")
 # - blob!(B, "globals", "ecoli_core") will create/load all files matching
@@ -54,7 +145,6 @@
 # think about dBlob as a batch of a single blob, so it needs to have batch+blob functionality
 
 
-# OLD --.- - -- - -- - -
 
 # IDEAS v1:
 
