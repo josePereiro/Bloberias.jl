@@ -6,14 +6,14 @@ function upref!(ref::BlobyRef, B::Bloberia, frame, key)
     isnothing(frame) && return ref
     ref.link["val.frame"] = frame
     ref.link["val.key"] = key
-    ref.link["val.owner"] = "B"
     return ref
 end
 
 # creates a ref to a Bloberia
-function blobyref(B::Bloberia)
+function blobyref(B::Bloberia; abs = true)
     ref = BlobyRef(:Bloberia, Bloberia)
     upref!(ref, B, nothing, nothing)
+    ref.link["src"] = "B"
     return ref
 end
 
@@ -24,14 +24,14 @@ function upref!(ref::BlobyRef, bb::BlobBatch, frame, key)
     isnothing(frame) && return ref
     ref.link["val.frame"] = frame
     ref.link["val.key"] = key
-    ref.link["val.owner"] = "bb"
     return ref
 end
 
-function blobyref(bb::BlobBatch)
+function blobyref(bb::BlobBatch; abs = true)
     ref = BlobyRef(:BlobBatch, BlobBatch)
-    upref!(ref, bb.B, nothing, nothing)
+    abs && upref!(ref, bb.B, nothing, nothing)
     upref!(ref, bb, nothing, nothing)
+    ref.link["src"] = "bb"
     return ref
 end
 
@@ -43,39 +43,42 @@ function upref!(ref::BlobyRef, b::Blob, frame, key)
     isnothing(frame) && return ref
     ref.link["val.frame"] = frame
     ref.link["val.key"] = key
-    ref.link["val.owner"] = "b"
     return ref
 end
 
 # :Blob
-function blobyref(b::Blob)
+function blobyref(b::Blob; abs = true)
     ref = BlobyRef(:Blob, Blob)
-    upref!(ref, b.bb.B, nothing, nothing)
-    upref!(ref, b.bb, nothing, nothing)
+    abs && upref!(ref, b.bb.B, nothing, nothing)
+    abs && upref!(ref, b.bb, nothing, nothing)
     upref!(ref, b, nothing, nothing)
+    ref.link["src"] = "b"
     return ref
 end
 
 # --.--. - .-. .- .--.-.- .- .---- ... . .-.-.-.- 
 # :Val
 
-function blobyref(B::Bloberia, frame, key; rT = Any)
+function blobyref(B::Bloberia, frame, key; rT = Any, abs = true)
     ref = BlobyRef(:Val, rT)
     upref!(ref, B, frame, key)
+    ref.link["src"] = "B"
     return ref
 end
 
-function blobyref(bb::BlobBatch, frame, key; rT = Any)
+function blobyref(bb::BlobBatch, frame, key; rT = Any, abs = true)
     ref = BlobyRef(:Val, rT)
-    upref!(ref, bb.B, nothing, nothing)
+    abs && upref!(ref, bb.B, nothing, nothing)
     upref!(ref, bb, frame, key)
+    ref.link["src"] = "bb"
     return ref
 end
 
-function blobyref(b::Blob, frame, key; rT = Any)
+function blobyref(b::Blob, frame, key; rT = Any, abs = true)
     ref = BlobyRef(:Val, rT)
-    upref!(ref, b.bb.B, nothing, nothing)
-    upref!(ref, b.bb, nothing, nothing)
+    abs && upref!(ref, b.bb.B, nothing, nothing)
+    abs && upref!(ref, b.bb, nothing, nothing)
     upref!(ref, b, frame, key)
+    ref.link["src"] = "b"
     return ref
 end

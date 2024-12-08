@@ -91,7 +91,7 @@ end
 ## --.--. - .-. .- .--.-.- .- .---- ... . .-.-.-.- 
 # allow ref rolling
 struct RefCacher <: BlobyObj
-    ab_cache::Dict{UInt, AbstractBlob}   # path => bb
+    depot_cache::Dict{UInt, AbstractBlob}   # path => bb
 end
 
 # ## --.--. - .-. .- .--.-.- .- .---- ... . .-.-.-.- 

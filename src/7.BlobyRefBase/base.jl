@@ -21,7 +21,7 @@ deref(::BlobyRef) = error("Not implemented")
 
 ## --.--. - .-. .- .--.-.- .- .---- ... . .-.-.-.- 
 import Base.getindex
-Base.getindex(ref::BlobyRef{lT, rT}) where {lT, rT} = deref(ref)::rT
+Base.getindex(ref::BlobyRef{lT, rT}) where {lT, rT} = deref!(ref)::rT
 
 import Base.eltype
 Base.eltype(::BlobyRef{lT, rT}) where {lT, rT} = rT

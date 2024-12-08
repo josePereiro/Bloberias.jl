@@ -43,7 +43,9 @@ _check_access(ab::AbstractBlob, fr::BlobyFrame) =
 
 function _getframe(ab::AbstractBlob, id)
     _onmiss_loadframe!(ab::AbstractBlob, id)
-    fr = getindex(frames_depot(ab), id)
+    fr = get(frames_depot(ab), id) do
+        error("Frame '", id, "' not found")
+    end
     _check_access(ab, fr)
     return fr::BlobyFrame
 end
