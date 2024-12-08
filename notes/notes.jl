@@ -1,3 +1,16 @@
+# TODO:
+# - implement reset!, which refresh the ram data as it is currently at disk
+
+# v6 DESIGN Blobs frames interface
+# getframe
+# - first lock at blobs frame
+# - then apply getframe(b.bb)
+# getframe!
+# - if applyed over the blob, means a blob frame
+# load
+# - load ondemand if missing 
+#   - important: only is missing, no empty, to avoid loading empty stuff all the time
+
 # v6 Automatic description of batch content
 # - Add time stamp
 # - add generating script src
@@ -5,7 +18,7 @@
 # v6 DESIGN data point centric view (ContextDB)
 # - a vblob can be viewed as an entry in a ContextDB was
 # - you can have a search system for matching contexts
-# - This indexing system act olso as a validator that hte data 
+# - This indexing system act also as a validator that hte data 
 # you are loading is the one you are refering too
 #   - it should fail if more than one is found (ambiguity)
 # - It also allows you to have multiple version of scripts
@@ -13,6 +26,14 @@
 # - The main problem is when a new context coord is introduced
 # which is equivaent to say that before was constant
 #   - back propagating new context should be implemented
+# - I think the only part missing is a macro interface
+#   - @blob! blob "frame" var = 1
+#   - Probably we need a global interface
+#       - @newblob! bb                 # create and select a blob
+#       - @selframe! "frame"           # select a frame
+#       - @blob! var = 1               # store (ram) a value in the blob
+#       - @blob! bla = rand(10,10)     # store (ram) a value in the blob
+#       - @context! blo = 1            # blob! a value but filter its type (?)
 
 # v6 DESIGN dict-like interface
 # - B["frame", "key1", "key2"]
@@ -22,9 +43,9 @@
 
 # v6 DESIGN herarchical struct
 # - blob can access different frames 
-#   - private: a particular uuid content on a vframe
-#   - bb global: the bb dframe
-#   - B global: the B dframe
+#   - private: a particular uuid content on a bframe
+#   - bb global: the bb bbframe
+#   - B global: the B bbframe
 # - that is, we only needs one type of blob
 # - pro: data is accessible from a blob and it is compartmentailize
 #   - only local and parent frames re accesible from a blob
@@ -32,7 +53,7 @@
 # - frame type can be resolve at loading either from the file name, structure, or meta data serialized in the frame.
 #   - I do prefer the serialize part (simplified filesys?)
 # - con?: meta will be a reserved name for a frame
-#   - It is a build in dframe
+#   - It is a build in bbframe
 # pro: a simple addres system
 # - B/frame (a frame from the B)
 # - bb/frame (a frame from the bb or B)
@@ -203,7 +224,7 @@
 # - That is, in a batch we will have:
 #     frame12: [blob123.fields12, blob124.fields12, blob125.fields12, ....]
 #     frame4:  [blob123.fields4 , blob124.fields4 , blob125.fields4 , ....]
-# - Additionally, we can have a "meta" field for each batch to store extra lite data of the whole batch.
+# - Additionally, we can have a META_FRAMEID field for each batch to store extra lite data of the whole batch.
 # - This way in memory is typically loaded as maximum a whole batch, but potentialy, only a few frames of the batch itself.
 # - A blob is a 'key' => 'value' structure
 # - each context is identifyed by an universaly unique identifier.

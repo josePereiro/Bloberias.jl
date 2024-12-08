@@ -11,6 +11,11 @@ uuid_str() = repr(uuid_int())
 
 _noop(x...) = nothing
 
+function _trydeserialize(path; onerr = _noop)
+    isfile(path) || return nothing
+    return _deserialize(path; onerr)
+end
+
 # _ismatch(pt, str)
 _ismatch(pt::Function, y) = pt(y) === true
 _ismatch(pt::AbstractChar, y::AbstractString) = isequal(string(pt), y)
@@ -25,15 +30,21 @@ function _mkpath(path)
     isdir(dir) || mkpath(dir)
 end
 
-function _deserialize(path::AbstractString)
-    deserialize(path)
+function _serialize(path::AbstractString, value; onerr = rethrow)
+    try; serialize(path, value)
+    catch e
+        @info("WRITE ERROR: '", path, "'")
+        return onerr(e)
+    end
 end
 
-function _serialize(path::AbstractString, value)
-    _mkpath(path)
-    serialize(path, value)
+function _deserialize(path::AbstractString; onerr = rethrow)
+    try; deserialize(path)
+    catch e
+        @info("READ ERROR: '", path, "'")
+        return onerr(e)
+    end
 end
-
 
 function _quoted_join(col, sep)
     strs = String[]

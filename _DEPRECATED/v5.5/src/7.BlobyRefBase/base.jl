@@ -28,14 +28,14 @@ Base.eltype(::BlobyRef{lT, rT}) where {lT, rT} = rT
 
 ## --.--. - .-. .- .--.-.- .- .---- ... . .-.-.-.- 
 # This one returns the blob
-# - the ref is an input
+# - the ref is already outside
 function blobyio!(f::Function, 
-        ref::BlobyRef{lT, rT}, 
+        ref::BlobyRef{:dBlobVal, rT}, 
         mode::Symbol;
         db = dblob(ref)
-    ) where rT where lT
-    frame = ref.link["val.frame"]::String
-    key = ref.link["val.key"]::String
+    ) where rT
+    frame = ref.link["db.frame"]::String
+    key = ref.link["db.key"]::String
     blobyio!(f, db, mode, frame, key)
     return db
 end

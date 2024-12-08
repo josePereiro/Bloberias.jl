@@ -2,138 +2,97 @@
 # The base object
 abstract type BlobyObj end
 
-## .-- . -. - .--..- -- .- - --..-.-.- .- -.--
-const TEMP_TYPE = OrderedDict{String, Any}
-const META_TYPE = OrderedDict{String, Any}
-const VUUIDS_TYPE = OrderedSet{UInt128}
-const BB_VFRAMES_TYPE = OrderedDict{String, OrderedDict{UInt128, OrderedDict}}
-const VB_VFRAMES_TYPE = OrderedDict{String, OrderedDict}
-const DFRAMES_TYPE = OrderedDict{String, OrderedDict}
-
+# IDEA: dev ContextDB interface in another package
+# - It can run on top of a Bloberia
 
 ## .-- . -. - .--..- -- .- - --..-.-.- .- -.--
+# Data types
+# const BLOB_BFRAMES_TYPE = OrderedDict{String, FRAME_TYPE}
+# const BB_DFRAMES_TYPE = OrderedDict{String, FRAME_TYPE}
+
+const TEMP_DEPOT_TYPE = OrderedDict{String, Any}
+
+const bUUIDS_DEPOT_TYPE = OrderedSet{UInt128}
+const bUUIDS_FRAMEID = "buuids"
+const bUUIDS_FRAME_TYPE = :buuids
+
+const META_DEPOT_TYPE = OrderedDict{String, Any}
+const META_FRAMEID = "meta"
+const META_FRAME_TYPE = :meta
+
+const BLOB_DEPOT_TYPE = OrderedDict{String, Any}
+const ABS_FRAME_DEPOT_TYPE = OrderedDict
+const VFRAME_DEPOT_TYPE = OrderedDict{UInt128, BLOB_DEPOT_TYPE}
+const DFRAME_DEPOT_TYPE = BLOB_DEPOT_TYPE
+
+const BFRAME_FRAME_TYPE = :Bframe
+const bFRAME_FRAME_TYPE = :bframe
+const bbFRAME_FRAME_TYPE = :bbframe
+
+## .-- . -. - .--..- -- .- - --..-.-.- .- -.--
+# File wrapper
+# fT::Symbol Frame type 
+# dT dat Type 
+struct BlobyFrame{fT, dT} <: BlobyObj
+    bo::BlobyObj # parent
+    id::String   # id
+    path::String # path
+    dat::dT      # content
+end
+
+const FRAMES_DEPOT_TYPE = Dict{String, BlobyFrame}
+
+## .-- . -. - .--..- -- .- - --..-.-.- .- -.--
+# An indexable object to interact with data
+abstract type AbstractBlob <: BlobyObj end
+
+## .-- . -. - .--..- -- .- - --..-.-.- .- -.--
+# TODO: copy pkg README into Bloberia
+
 # Top level object
-mutable struct Bloberia <: BlobyObj
+struct Bloberia <: AbstractBlob
     root::String
-    meta::META_TYPE         # Disk frame
-    temp::TEMP_TYPE         # RAM only
+    frames::FRAMES_DEPOT_TYPE    # ram/disk frame
+    temp::TEMP_DEPOT_TYPE              # ram only frame
 end
 
 ## .-- . -. - .--..- -- .- - --..-.-.- .- -.--
 # BlobBatch
+# #TODO: Add layout comment (see _DEPRECATED)
 # =================
 # Disk/Data layout
 # B (Bloberia)
-# |- ./bb0 (BlobBatch)
-# .   |- ./meta.jls
-# .   |- ./0.dframe.jls         {...}
-# .         |- "key0" => dat0
-#           |- "key1" => dat1
-#           |- ...
-#     |- ./custom.dframe.jls    {...}
-#     |- ./vblobs.ids.jls       {uuid0 => {...}, uuid1 => {...}, ...}
-#           |- uuid0
-#               |- "key00" => dat0
-#               |- ...
-#           |- uuid1
-#               |- "key10" => dat0
-#               |- ...
-#     |- ./0.vframe.jls         {uuid0 => {...}, uuid1 => {...}, ...}
-#     |- ./custom.vframe.jls    {uuid0 => {...}, uuid1 => {...}, ...}
-#     |- ...
-
-# =================
-# Ram layout
-# B (Bloberia)
-# |- bb0 (BlobBatch)
-#     |- meta
-#           |- "key0" => dat0
-#           |- "key1" => dat1
-#           |- ...
-#     |- temp
-#           |- "key0" => dat0
-#           |- "key1" => dat1
-#           |- ...
-#     |- dframes
-#           |- "frame0" 
-#                  |- "key0" => dat0
-#                  |- "key1" => dat1
-#           |- ...
-#     |- vframes
-#           |- "frame0" 
-#                   |- uuid0 
-#                       |- "key0" => dat0
-#                       |- "key1" => dat1
-#                   |- uuid1
-#                       |- "key0" => dat0
-#                       |- "key1" => dat1
-#           |- ...
-#     |- ...
-# |- ...
-
-# =================
-# interface layout
-# B (Bloberia)
-# |- bb0 (BlobBatch)
-# .   |- meta
-# .   |   |- key
-# .   |
-#     |- dframe (dblob)
-#     |   |- key
-#     |
-#     |- uuid0 (vBlob)
-#     .   |- vframe
-#     .        |- key
-#     .
-mutable struct BlobBatch <: BlobyObj
-    # Parent folder
-    B::Bloberia    
+# ...
+struct BlobBatch <: AbstractBlob
+    B::Bloberia     # Parent folder
     id::String
-    
-    ## meta (disk)
-    #- config/state/meta in general
-    meta::META_TYPE              # {...}
-    ## dframes
-    dframes::DFRAMES_TYPE        # {"frame0" => {...}, ...}
-    ## vframes (disk)
-    #- defines which vblobs are present
-    vuuids::VUUIDS_TYPE          # [uuid0, uuid1, ...]
-    #- ram copy of frames
-    vframes::BB_VFRAMES_TYPE        # {"frame0" => {uuid => {...}, ...}, ...}
-    # ram
-    temp::TEMP_TYPE              # {...}
+    root::String
+    frames::FRAMES_DEPOT_TYPE    # ram/disk frame
+    # ram only
+    temp::TEMP_DEPOT_TYPE
 end
 
 ## .-- . -. - .--..- -- .- - --..-.-.- .- -.--
-abstract type AbstractBlob <: BlobyObj end
-
-## .-- . -. - .--..- -- .- - --..-.-.- .- -.--
-# This is an object defined across different vframes
-struct vBlob <: AbstractBlob
-    bb::BlobBatch       # owner batch
+# This is an object defined across different bframes
+struct Blob <: AbstractBlob
+    bb::BlobBatch          # owner batch
     uuid::UInt128          # unique universal id
+    function Blob(bb, uuid)
+        new(bb, UInt128(uuid))
+    end
 end
-
-## .-- . -. - .--..- -- .- - --..-.-.- .- -.--
-# Just a wrapper of bb.dframes
-struct dBlob <: AbstractBlob
-    bb::BlobBatch       # owner batch
-end
-
 
 ## --.--. - .-. .- .--.-.- .- .---- ... . .-.-.-.- 
-# TODO: Complete signature BlobyRef{lT, rT} where {lT::Symbol, rT<:Any}
-struct BlobyRef{lT, rT}
+struct BlobyRef{lT, rT} <: BlobyObj
     link::Dict{String, Any}  # All coordinates   
     BlobyRef(ltype::Symbol, rtype::DataType) = new{ltype, rtype}(Dict())
 end
 
 ## --.--. - .-. .- .--.-.- .- .---- ... . .-.-.-.- 
 # allow ref rolling
-struct RefCacher
-    bb_cache::Dict{String, BlobBatch}   # path => bb
-    RefCacher() = new(Dict())
+struct RefCacher <: BlobyObj
+    ab_cache::Dict{UInt, AbstractBlob}   # path => bb
 end
 
-## --.--. - .-. .- .--.-.- .- .---- ... . .-.-.-.- 
-nothing
+# ## --.--. - .-. .- .--.-.- .- .---- ... . .-.-.-.- 
+# nothing
