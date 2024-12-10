@@ -17,7 +17,6 @@ module Bloberias
     #! include 0.Base
     include("0.Base/0_types.jl")
     include("0.Base/kv_interface.jl")
-    include("0.Base/scope_interface.jl")
     include("0.Base/utils.jl")
 
     #! include 1.BlobyObjBase

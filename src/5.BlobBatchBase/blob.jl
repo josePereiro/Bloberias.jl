@@ -27,3 +27,8 @@ function blobcount(bb::BlobBatch)
     buuids = getbuuids(bb)
     return length(buuids)
 end 
+
+_blobcount_cached(bb::BlobBatch) = 
+    get(bb, "meta", "blobs.cached.count") do
+        blobcount(bb)
+    end

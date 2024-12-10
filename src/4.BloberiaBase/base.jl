@@ -95,23 +95,9 @@ function isoverflowed(bb::BlobBatch)
 end
 
 ## --.--. - .-. .- .--.-.- .- .---- ... . .-.-.-.- 
-# # 250000
-# function __blobcount_tout_cb(_lk, _tot_count, _isout, _tout, _t0)
-#     _tot_count[] = 0
-#     _isout[] = false
-
-#     return (_bb) -> let
-#         @show _bb
-#         _isout[] = tout > 0 && time() - _t0 > tout
-#         _isout[] && return :break
-#         _count = blobcount(_bb)
-#         lock(_lk) do
-#             _tot_count[] += _count
-#         end
-#     end
-# end
-
-function _blobcount_tout(B::Bloberia, bbid_prefix, tout)
+function _blobcount_tout(B::Bloberia, bbid_prefix, tout; 
+        blobcountfun = _blobcount_cached
+    )
     _lk = ReentrantLock()
     _tot_count = 0
     _t0 = time()
@@ -124,7 +110,7 @@ function _blobcount_tout(B::Bloberia, bbid_prefix, tout)
     ) do _bb
         _isout = tout > 0 && time() - _t0 > tout
         _isout && return :break
-        _count = blobcount(_bb)
+        _count = blobcountfun(_bb)
         lock(_lk) do
             _tot_count += _count
         end
@@ -142,9 +128,11 @@ function Base.filesize(B::Bloberia)
     return _recursive_filesize(bloberiapath(B))
 end
 
-
-
 ## --.--. - .-. .- .--.-.- .- .---- ... . .-.-.-.- 
+import Base.mkpath
+Base.mkpath(B) = mkpath(bloberiapath(B))
+
+
 # const BLOBERIA_DEFAULT_RABLOB_ID = "0"
 # const BLOBERIA_DEFAULT_BBID = "0"
 # const BLOBERIA_DEFAULT_BBID_PREFIX = "0"

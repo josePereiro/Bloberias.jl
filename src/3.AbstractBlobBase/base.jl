@@ -13,10 +13,28 @@ hasframe_disk(ab::AbstractBlob, id::String) = isfile(_frame_path(_frames_root(ab
 hasframe_disk(ab::AbstractBlob) = hasframe_disk(ab, _dflt_frameid(ab))
 
 # errorless
+function _serialize_frame(path, frame::BlobyFrame, )
+    _serialize(path, 
+        (;
+            dat = frame.dat, 
+            path = frame.path, 
+            id = frame.id, 
+            fT = _frame_fT(frame), 
+            dT = _frame_dT(frame), 
+        )
+    )
+end
+
+function _deserialize_frame(ab::AbstractBlob, fpath)
+    ft = _deserialize(fpath)
+    # @assert ft.path == fpath
+    return BlobyFrame{ft.fT, ft.dT}(ab, ft.id, ft.path, ft.dat)
+end
+
 function _try_loadframe!(ab::AbstractBlob, id)
     fpath = _frame_path(_frames_root(ab), id)
     isfile(fpath) || return nothing
-    frame = _deserialize(fpath)::BlobyFrame
+    frame = _deserialize_frame(ab, fpath)
     setindex!(frames_depot(ab), frame, id)
     nothing
 end
@@ -67,11 +85,11 @@ function serialize_frames!(f::Function, ab::AbstractBlob)
     for (id, frame) in frames_depot(ab)
         f(frame) || continue
         isempty(frame) && continue
-        _serialize(frame_path(ab, id), frame)
+        _serialize_frame(frame_path(ab, id), frame)
     end
 end
 serialize_frame!(ab::AbstractBlob, id) = 
-    _serialize(frame_path(ab, id), frames_depot(ab)[frame])
+    _serialize_frame(frame_path(ab, id), frames_depot(ab)[frame])
 
 ## --.--. - .-. .- .--.-.- .- .---- ... . .-.-.-.- 
 # Base dict interface
@@ -97,6 +115,15 @@ Base.getindex(ab::AbstractBlob, frameid::Vector{String}) =
 
 Base.getindex(ab::AbstractBlob, ref::BlobyRef) = deref(ab, ref)
 
+# index (order not controlled)
+function Base.getindex(ab::AbstractBlob, i0::Int)
+    for (i, el) in enumerate(ab)
+        i0 == i && return el
+    end
+    error("Index our of bound!")
+end
+
+
 import Base.setindex!
 function Base.setindex!(ab::AbstractBlob, val, frameid, key)
     frame = getframe!(ab, frameid)
@@ -118,7 +145,7 @@ function Base.get(dflt::Function, ab::AbstractBlob, frameid, key)
 end
 Base.get(dflt::Function, ab::AbstractBlob, key) = 
     get(dflt, ab, _dflt_frameid(ab), key)
-Base.get(ab::AbstractBlob, key, frameid, dflt) = get(() -> dflt, ab, frameid, key)
+Base.get(ab::AbstractBlob, frameid, key, dflt) = get(() -> dflt, ab, frameid, key)
 Base.get(ab::AbstractBlob, key, dflt) = get(() -> dflt, ab, _dflt_frameid(ab), key)
 
 import Base.get!
@@ -159,7 +186,7 @@ blobyref(ab::AbstractBlob, key; rT = Any, abs = true) =
 # :get! = get! f() from ram/disk
 # ::getser! = get! and then, if  issing, serialize!
 # :dry = run f() return empty ref
-function blobyio!(f::Function, ab::AbstractBlob, mode::Symbol, frame, key::String)
+function blobyio!(f::Function, ab::AbstractBlob, frame, key::String, mode::Symbol = :get!)
     if mode == :set!
         val = f()
         setindex!(ab, val, frame, key)
@@ -196,8 +223,8 @@ function blobyio!(f::Function, ab::AbstractBlob, mode::Symbol, frame, key::Strin
     end
     error("Unknown mode, ", mode, ". see blobyio! src")
 end
-blobyio!(f::Function, ab::AbstractBlob, mode::Symbol, key::String) = 
-    blobyio!(f, ab, mode, _dflt_frameid(ab), key)
+blobyio!(f::Function, ab::AbstractBlob, key::String, mode::Symbol = :get!) = 
+    blobyio!(f, ab, _dflt_frameid(ab), key, mode)
 
 
 ## --.--. - .-. .- .--.-.- .- .---- ... . .-.-.-.- 
@@ -210,6 +237,15 @@ function _hashio!(ab::AbstractBlob, val, mode = :getser!;
     frame = string(prefix, ".", repr(hashfun(val)))
     ref = blobyref(ab, frame, key; rT = typeof(val), abs)
     blobyio!(() -> val, ref, mode; ab)
-    # blobyio!(() -> val, mode, frame, key; ab)
     return ref
 end
+
+## --.--. - .-. .- .--.-.- .- .---- ... . .-.-.-.- 
+import Base.merge!
+function Base.merge!(ab::AbstractBlob, frame::AbstractString, vals)
+    for (k, v) in vals
+        setindex!(ab, v, frame, k)
+    end
+end
+Base.merge!(ab::AbstractBlob, vals) = 
+    merge!(ab, _dflt_frameid(ab), vals)

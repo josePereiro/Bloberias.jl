@@ -22,7 +22,7 @@ function serialize_meta!(B::Bloberia)
 end
 
 ## --.--. - .-. .- .--.-.- .- .---- ... . .-.-.-.- 
-function serialize!(B::Bloberia; lk = true)
+function serialize!(B::Bloberia; lk = false)
 
     # callback
     onserialize!(B)

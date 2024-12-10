@@ -51,11 +51,11 @@ end
 # - the ref is an input
 function blobyio!(f::Function, 
         ref::BlobyRef, 
-        mode::Symbol;
+        mode::Symbol = :get!;
         ab = deref_srcblob(ref)
     )
     frame = ref.link["val.frame"]::String
     key = ref.link["val.key"]::String
-    blobyio!(f, ab, mode, frame, key)
+    blobyio!(f, ab, frame, key, mode)
     return ab
 end

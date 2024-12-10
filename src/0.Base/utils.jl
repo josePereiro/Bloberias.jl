@@ -21,8 +21,8 @@ _ismatch(::Nothing, y) = true  # pass
 _ismatch(pt, y) = isequal(pt, y)
 
 function _mkpath(path)
-    dir = dirname(path)
-    isdir(dir) || mkpath(dir)
+    dir = isdir(path) ? path : dirname(path)
+    mkpath(dir)
 end
 
 function _deserialize(path::AbstractString)

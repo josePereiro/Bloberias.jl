@@ -6,6 +6,7 @@ function onserialize!(bb::BlobBatch, args...)
     # default up meta
     meta = getmeta(bb)
     meta["serialization.last.time"] = time()
+    meta["blobs.cached.count"] = length(getbuuids(bb))
     
     # custom
     for callback in BLOBBATCH_ONSERIELIZE_CALLBACKS
@@ -49,16 +50,16 @@ function _serialize!(bb::BlobBatch, id)
     serialize_frames!(bb) do fr
         isnothing(id) && return true # serialize all
         isempty(id) && return true   # serialize all
-        fr.id == id || return false  # serialize just id
+        # fr.id == id || return false  # serialize just id
         # if bframe, always serialize buuids (for sync)
-        _frame_fT(fr) == bb_bFRAME_FRAME_TYPE || return true
-        serialize_buuids!(bb) # serialize
+        # _frame_fT(fr) == bb_bFRAME_FRAME_TYPE || return true
+        # serialize_buuids!(bb) # serialize
         return true
     end
 
     return bb
 end
-function serialize!(bb::BlobBatch, id = nothing; lk = true)
+function serialize!(bb::BlobBatch, id = nothing; lk = false)
     __dolock(bb, lk) do
         _serialize!(bb, id)
     end
