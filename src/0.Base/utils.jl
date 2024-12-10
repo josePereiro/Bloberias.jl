@@ -100,3 +100,5 @@ function _getindex(os::OrderedSet, i0)
     end
     throw(BoundsError(os, i0))
 end
+
+_constant(v) = (x...) -> v 

@@ -1,7 +1,7 @@
 # -. -- .- ---- - .-. - - .-- . -..... --- -- - .
 # To Implement
 # A hash for distinguising the object
-# It should not change if the object is modified while locked. 
+# It should not change if the object is modified while lk. 
 function _lock_obj_identity_hash(obj, h0)::UInt64
     error("Non implemented!!!")
 end
@@ -58,9 +58,8 @@ function Base.unlock(bo::BlobyObj, args...; force = false)
     isnothing(lk) && return # ignore
     return unlock(lk; force)
 end
-    
-function unlock_batches(B::Bloberia; force = true)
-    for bb in B
-        unlock(bb; force)
-    end
+
+
+function __dolock(f::Function, bo::BlobyObj, lkflag, args...; kwargs...)
+    lkflag ? lock(f, bo, args...; kwargs...) : f()
 end

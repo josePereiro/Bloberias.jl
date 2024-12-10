@@ -8,45 +8,177 @@ using Test
 # .-- . -. - .--..- -- .- - --..-.-.- .- -.--
 @testset "Bloberias.jl" begin
     ## .-- . -. - .--..- -- .- - --..-.-.- .- -.--
-    B_ROOT = joinpath(tempname(), "db")
+    B_ROOT = joinpath(tempname(), "B")
     atexit(() -> rm(B_ROOT; force = true, recursive = true)) 
 
     try
 
         ## .-- . -. - .--..- -- .
-        # Test blobyref
+        println("\n", "-"^40)
+        @info("Test threaded iterator")
         let
+            B = Bloberia(B_ROOT)
+            rm(B)
+
+            nbbs = 10
+            bs_per_bb = 10
+            for bbi in 1:nbbs
+                bb = blobbatch!(B, "db$bbi")
+                for bi in 1:bs_per_bb
+                    b = blob!(bb, bi)
+                    b["rand"] = rand()
+                end
+                serialize!(bb)
+            end
+            @test batchcount(B) == nbbs
+
+            # serial
+            _wt = 0.2
+            _t = @elapsed foreach_batch(B; 
+                ch_size = nthreads(),
+                n_tasks = 1
+            ) do bb
+                @show threadid()
+                sleep(_wt)
+            end
+            @show _t
+            @test _t >= nbbs * _wt
+
+            # threaded
+            if nthreads() > 1
+                _wt = 0.2
+                _t = @elapsed foreach_batch(B; 
+                    ch_size = nthreads(),
+                    n_tasks = nbbs
+                ) do bb
+                    @show threadid()
+                    sleep(_wt)
+                end
+                @show _t
+                @test _t <= nbbs * _wt
+            end
+
+        end
+        
+        ## .-- . -. - .--..- -- .
+        println("\n", "-"^40)
+        @info("Test RefCacher")
+        let
+            B = Bloberia(B_ROOT)
+            rm(B)
+
+            # write
+            _refs = BlobyRef[]
+            _acc0 = 0.0
+            bb = blobbatch!(B, "db")
+            for bi in 1:100
+                b = blob!(bb, bi)
+                rn = rand()
+                _acc0 += rn
+                b["rand"] = rn
+                ref = blobyref(b, "rand"; rT = Float64, abs = true)
+                push!(_refs, ref)
+            end
+            serialize!(bb)
+
+            # test iterato
+            _acc = 0
+            for _bb in B
+                for b in _bb
+                    _acc += b["rand"]
+                end
+            end
+            @test _acc == _acc0
+            
+            # no cache
+            _acc = 0.0
+            @time _alloc_non_cached = @allocated for ref in _refs
+                _acc += ref[]
+            end
+            @show _alloc_non_cached
+            @test _acc == _acc0
+
+            # cache
+            _acc = 0.0
+            rc = RefCacher()
+            @time _alloc_cached = @allocated for ref in _refs
+                _acc += rc[ref]
+            end
+            @show _alloc_cached
+            @test _acc == _acc0
+
+            # rel ref
+            _acc = 0.0
+            @time _alloc_rel = @allocated for ref in _refs
+                _acc += bb[ref]
+            end
+            @show _alloc_rel
+            @test _acc == _acc0
+
+            @test _alloc_rel < _alloc_cached 
+            @test _alloc_cached < _alloc_non_cached 
+        end
+        
+        ## .-- . -. - .--..- -- .
+        println("\n", "-"^40)
+        @info("Test blobyref")
+        let
+            ## Ram only
             B = Bloberia(B_ROOT)
             rc = RefCacher()
             rm(B)
+
             ref = blobyref(B)
             @test B.root == ref[].root      # abs deref
             @test B.root == B[ref].root     # rel deref
             @test B.root == rc[ref].root     # rel deref
             
-            bb = blobbatch!(B, "test")
+            # non absolute path
+            ref = blobyref(B; abs = false)
+            @test B.root == ref[].root       # abs deref (bloberia is the root, always abs)
+            @test B.root == B[ref].root      # rel deref
+            
+            bb = blobbatch!(B, "bb")
             # rm(bb)
-            ref = blobyref(bb)
+            ref = blobyref(bb; abs = true)
             @test bb.root == ref[].root       # abs deref
             @test bb.root == bb[ref].root     # rel deref
             @test bb.root == B[ref].root      # rel deref
             @test bb.root == rc[ref].root     # rel deref
+            
+            # non absolute path
+            ref = blobyref(bb; abs = false)
+            @test_throws ["B.root"] bb.root == ref[].root  # fail (B missing)
+            @test bb.root == bb[ref].root     # rel deref
+            @test bb.root == B[ref].root      # rel deref
         
             b = blob!(bb, 0)
             ref = blobyref(b)
-            @test b.bb.root == bb[ref].bb.root   # rel deref
+            @test b.bb.root == ref[].bb.root    # abs deref
+            @test b.bb.root == b[ref].bb.root   # rel deref
+            @test b.uuid == ref[].uuid          # abs deref
+            @test b.uuid == bb[ref].uuid        # rel deref
+            @test b.uuid == rc[ref].uuid        # rel deref
+            
+            # non absolute path
+            ref = blobyref(b; abs = false)
+            @test_throws ["B.root"] b.uuid == ref[].uuid  # fail (B missing)
             @test b.uuid == bb[ref].uuid       # rel deref
-            @test b.uuid == rc[ref].uuid       # rel deref
-        
+            @test b.bb.root == b[ref].bb.root   # rel deref
+            
             # blob(ref) only work if disk version exist
             # the same for ref[]
             # but blob!(ref) creates a new blob
-            b1 = blob!(ref)                       # force
-            @test b.uuid == b1.uuid             # 
-            @test b.bb.root == b1.bb.root       # 
+            ref = blobyref(b)
+            b1 = blob(ref)                      
+            @test b.uuid == b1.uuid             #
+            @test b.bb.root == b1.bb.root       #
             @test b.bb.root == b[ref].bb.root   # rel deref
             @test b.uuid == b1[ref].uuid        # rel deref
             @test b.uuid == rc[ref].uuid        # rel deref
+        
+            ref = blobyref(b; abs = false)
+            @test_throws ["B.root"] blob(ref)     # fail (B missing)             
         
             # Vals
             rm(B)
@@ -56,45 +188,78 @@ using Test
             ref = blobyref(B, "ref.test"; rT = Int)
             B["ref.test"] = 1
             @test B[ref] == 1
-            # @test rc[ref] == 1  # this fail because values needs disk
+            @test_throws ["not found"] rc[ref] == 1  # this fail because values needs disk
             
-            B[ref] = 2
-            @test B[ref] == 2
-            serialize!(B)
+            ## Disk interactions
+            rm(B)
             empty!(B)
-            @test B[ref] == 2
-            @test rc[ref] == 2
-        
-            ref = blobyref(bb, "ref.test"; rT = Int)
-            bb["ref.test"] = 1
-            @test bb[ref] == 1
-            bb[ref] = 2
-            @test bb[ref] == 2
-            serialize!(bb)
             empty!(bb)
-            @test bb[ref] == 2
-            @test rc[ref] == 2
-        
-            ref = blobyref(b, "ref.test"; rT = Int)
-            b["ref.test"] = 1
-            @test b[ref] == 1
-            b[ref] = 2
-            @test b[ref] == 2
-            serialize!(bb)
-            empty!(bb)
-            @test b[ref] == 2
-            @test rc[ref] == 2
-        
+            empty!(rc)
+            bb = blobbatch!(B, "db")
+            b = blob!(bb, 0)
+            for ab in [B, bb, b]
+                # @info "Testing" typeof(ab)
+                ref = blobyref(ab, "ref.test"; rT = Int)
+                @test_throws ["not found"] ref[] # val does not exist anywhere
+                ab["ref.test"] = 1
+                @test ab[ref] == 1 # now it exist on ram
+                ab[ref] = 2
+                @test_throws ["not found"] ref[] # but ram is unreachable 
+                @test ab[ref] == 2 # at least you do a relative deref
+                
+                serialize!(B)
+                serialize!(bb)
+                empty!(B) # clear ram
+                empty!(bb) # clear ram
+                
+                # load from disk
+                @test ref[] == 2
+                @test ab[ref] == 2
+                @test rc[ref] == 2
+            end
         end
-        
 
         ## .-- . -. - .--..- -- .
-        # Test getindex/setindex! interface
+        println("\n", "-"^40)
+        @info("Test hashio!")
         let
             B = Bloberia(B_ROOT)
             rm(B)
             # ram only
-            bb = blobbatch!(B, "test")
+            bb = blobbatch!(B, "bb")
+            b = blob!(bb, 0)
+        
+            Random.seed!(123)
+            for ab in [b, bb]
+                @show typeof(ab)
+                for it in 1:10
+                    mat = rand(10,10)
+                    # abs
+                    ref = hashio!(ab, mat, :get!)
+                    show(ref); println()
+                    @test objectid(ab[ref]) == objectid(mat)
+                    serialize!(bb)
+                    @test objectid(ref[]) != objectid(mat)
+                    @test mat == ab[ref]
+                    @test mat == ref[]
+                    
+                    # rel
+                    ref = hashio!(ab, mat; abs = false)
+                    show(ref); println()
+                    @test objectid(ab[ref]) == objectid(mat) # still the same object
+                    @test mat == ab[ref]
+                end 
+            end
+        end
+
+        ## .-- . -. - .--..- -- .
+        println("\n", "-"^40)
+        @info("Test getindex/setindex! interface")
+        let
+            B = Bloberia(B_ROOT)
+            rm(B)
+            # ram only
+            bb = blobbatch!(B, "bb")
             b = blob!(bb, 0)
             for bobj in [B, bb, b]
                 _runned = get!(bobj, "key0", 1)
@@ -123,6 +288,10 @@ using Test
                 @test _runned == 1
             end
         end
+
+        ## .-- . -. - .--..- -- .
+        println("\n")
+        
     finally
         rm(B_ROOT; recursive = true, force = true)
     end

@@ -24,6 +24,12 @@ frames_depot(bo::BlobyObj) = error("Too implement") # reimplement this if needed
 frame_path(bo::BlobyObj, id) = _frame_path(_frames_root(bo), id)
 
 ## --.--. .- . .- -- - ---- .- - .- .-.- .- -.-. 
+# Base
+
+import Base.isempty
+Base.isempty(bf::BlobyFrame) = isempty(bf.dat)
+
+## --.--. .- . .- -- - ---- .- - .- .-.- .- -.-. 
 # file sys
 import Base.rm
 Base.rm(bo::BlobyObj, id) =
@@ -31,3 +37,4 @@ Base.rm(bo::BlobyObj, id) =
 
 import Base.isfile
 Base.isfile(bo::BlobyObj, id) = isfile(frame_path(bo, id))
+

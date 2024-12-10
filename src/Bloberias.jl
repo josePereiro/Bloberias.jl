@@ -33,13 +33,17 @@ module Bloberias
     #! include 4.BloberiaBase
     include("4.BloberiaBase/base.jl")
     include("4.BloberiaBase/blobbatch.jl")
+    include("4.BloberiaBase/iterator.jl")
     include("4.BloberiaBase/serialize.jl")
+    include("4.BloberiaBase/show.jl")
     
 
     #! include 5.BlobBatchBase
     include("5.BlobBatchBase/base.jl")
     include("5.BlobBatchBase/blob.jl")
+    include("5.BlobBatchBase/iterator.jl")
     include("5.BlobBatchBase/serialize.jl")
+    include("5.BlobBatchBase/show.jl")
     
     #! include 6.BlobBase
     include("6.BlobBase/base.jl")

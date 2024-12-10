@@ -21,21 +21,41 @@ deref(::BlobyRef) = error("Not implemented")
 
 ## --.--. - .-. .- .--.-.- .- .---- ... . .-.-.-.- 
 import Base.getindex
-Base.getindex(ref::BlobyRef{lT, rT}) where {lT, rT} = deref!(ref)::rT
+Base.getindex(ref::BlobyRef{lT, rT}) where {lT, rT} = deref(ref)::rT
 
 import Base.eltype
 Base.eltype(::BlobyRef{lT, rT}) where {lT, rT} = rT
 
 ## --.--. - .-. .- .--.-.- .- .---- ... . .-.-.-.- 
+_repr(s::String) = s
+_repr(o) = repr(o)
+
+function Base.show(io::IO, ref::BlobyRef)
+    i = 0
+    for (pel, color) in [
+            ("B.root", :light_green), 
+            ("bb.id", :green), 
+            ("b.uuid", :cyan), 
+            ("val.frame", :blue), 
+            ("val.key", :blue)
+        ]
+        haskey(ref.link, pel) || continue
+        i != 0 && printstyled(io, "//"; color = :normal)
+        printstyled(io, _repr(ref.link[pel]); color)
+        i += 1
+    end
+end
+
+## --.--. - .-. .- .--.-.- .- .---- ... . .-.-.-.- 
 # This one returns the blob
 # - the ref is an input
 function blobyio!(f::Function, 
-        ref::BlobyRef{lT, rT}, 
+        ref::BlobyRef, 
         mode::Symbol;
-        db = dblob(ref)
-    ) where rT where lT
+        ab = deref_srcblob(ref)
+    )
     frame = ref.link["val.frame"]::String
     key = ref.link["val.key"]::String
-    blobyio!(f, db, mode, frame, key)
-    return db
+    blobyio!(f, ab, mode, frame, key)
+    return ab
 end

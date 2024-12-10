@@ -28,11 +28,11 @@ end
 
 serialize_bbframes!(bb::BlobBatch) = 
     serialize_frames!(bb) do fr
-        _frame_fT(fr) == bbFRAME_FRAME_TYPE
+        _frame_fT(fr) == bb_bbFRAME_FRAME_TYPE
     end
 serialize_bframes!(bb::BlobBatch) = 
     serialize_frames!(bb) do fr
-        _frame_fT(fr) == bFRAME_FRAME_TYPE
+        _frame_fT(fr) == bb_bFRAME_FRAME_TYPE
     end
 
 
@@ -51,7 +51,7 @@ function _serialize!(bb::BlobBatch, id)
         isempty(id) && return true   # serialize all
         fr.id == id || return false  # serialize just id
         # if bframe, always serialize buuids (for sync)
-        _frame_fT(fr) == bFRAME_FRAME_TYPE || return true
+        _frame_fT(fr) == bb_bFRAME_FRAME_TYPE || return true
         serialize_buuids!(bb) # serialize
         return true
     end
@@ -59,8 +59,7 @@ function _serialize!(bb::BlobBatch, id)
     return bb
 end
 function serialize!(bb::BlobBatch, id = nothing; lk = true)
-    lk || return _serialize!(bb, id)
-    lock(bb) do
+    __dolock(bb, lk) do
         _serialize!(bb, id)
     end
 end

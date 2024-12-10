@@ -23,7 +23,6 @@ end
 rblob!(bb::BlobBatch) = blob!(bb, uuid_int())
 
 # ## --.--. - .-. .- .--.-.- .- .---- ... . .-.-.-.- 
-# Use, uuids # RAM STATE
 function blobcount(bb::BlobBatch)
     buuids = getbuuids(bb)
     return length(buuids)

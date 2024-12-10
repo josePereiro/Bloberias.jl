@@ -8,9 +8,9 @@ _frames_root(::AbstractBlob) = error("To implement")
 # getframe interface
 
 hasframe_ram(ab::AbstractBlob, id::String) = haskey(frames_depot(ab), id)
-hasframe_ram(ab::AbstractBlob) = hasframe_ram(ab, _default_id(ab))
+hasframe_ram(ab::AbstractBlob) = hasframe_ram(ab, _dflt_frameid(ab))
 hasframe_disk(ab::AbstractBlob, id::String) = isfile(_frame_path(_frames_root(ab), id))
-hasframe_disk(ab::AbstractBlob) = hasframe_disk(ab, _default_id(ab))
+hasframe_disk(ab::AbstractBlob) = hasframe_disk(ab, _dflt_frameid(ab))
 
 # errorless
 function _try_loadframe!(ab::AbstractBlob, id)
@@ -66,13 +66,12 @@ end
 function serialize_frames!(f::Function, ab::AbstractBlob)
     for (id, frame) in frames_depot(ab)
         f(frame) || continue
+        isempty(frame) && continue
         _serialize(frame_path(ab, id), frame)
     end
 end
 serialize_frame!(ab::AbstractBlob, id) = 
-    _serialize_frames!(ab) do fr
-        fr.id == id
-    end
+    _serialize(frame_path(ab, id), frames_depot(ab)[frame])
 
 ## --.--. - .-. .- .--.-.- .- .---- ... . .-.-.-.- 
 # Base dict interface
@@ -83,8 +82,8 @@ serialize_frame!(ab::AbstractBlob, id) =
 
 # public interface returns fr.dat
 
-getframe(ab::AbstractBlob) = getframe(ab, _default_id(ab))
-getframe!(ab::AbstractBlob) = getframe!(ab, _default_id(ab))
+getframe(ab::AbstractBlob) = getframe(ab, _dflt_frameid(ab))
+getframe!(ab::AbstractBlob) = getframe!(ab, _dflt_frameid(ab))
     
 import Base.getindex
 function Base.getindex(ab::AbstractBlob, frameid, key)
@@ -92,7 +91,7 @@ function Base.getindex(ab::AbstractBlob, frameid, key)
     return Base.getindex(frame, key)
 end
 Base.getindex(ab::AbstractBlob, key) = 
-    Base.getindex(ab, _default_id(ab), key)
+    Base.getindex(ab, _dflt_frameid(ab), key)
 Base.getindex(ab::AbstractBlob, frameid::Vector{String}) =
     getframe(ab, first(frameid))
 
@@ -104,7 +103,7 @@ function Base.setindex!(ab::AbstractBlob, val, frameid, key)
     return Base.setindex!(frame, val, key)
 end
 Base.setindex!(ab::AbstractBlob, val, key) = 
-    setindex!(ab, val, _default_id(ab), key)
+    setindex!(ab, val, _dflt_frameid(ab), key)
 
 Base.setindex!(ab::AbstractBlob, val, ref::BlobyRef) =
     setindex!(ab, val,
@@ -118,9 +117,9 @@ function Base.get(dflt::Function, ab::AbstractBlob, frameid, key)
     return get(dflt, frame, key)
 end
 Base.get(dflt::Function, ab::AbstractBlob, key) = 
-    get(dflt, ab, _default_id(ab), key)
+    get(dflt, ab, _dflt_frameid(ab), key)
 Base.get(ab::AbstractBlob, key, frameid, dflt) = get(() -> dflt, ab, frameid, key)
-Base.get(ab::AbstractBlob, key, dflt) = get(() -> dflt, ab, _default_id(ab), key)
+Base.get(ab::AbstractBlob, key, dflt) = get(() -> dflt, ab, _dflt_frameid(ab), key)
 
 import Base.get!
 function Base.get!(dflt::Function, ab::AbstractBlob, frameid, key)
@@ -128,9 +127,9 @@ function Base.get!(dflt::Function, ab::AbstractBlob, frameid, key)
     return get!(dflt, frame, key)
 end
 Base.get!(dflt::Function, ab::AbstractBlob, key) = 
-    get!(dflt, ab, _default_id(ab), key)
+    get!(dflt, ab, _dflt_frameid(ab), key)
 Base.get!(ab::AbstractBlob, key, frameid, dflt) = get!(() -> dflt, ab, frameid, key)
-Base.get!(ab::AbstractBlob, key, dflt) = get!(() -> dflt, ab, _default_id(ab), key)
+Base.get!(ab::AbstractBlob, key, dflt) = get!(() -> dflt, ab, _dflt_frameid(ab), key)
 
 
 ## --.--. - .-. .- .--.-.- .- .---- ... . .-.-.-.- 
@@ -151,5 +150,66 @@ Base.isempty(ab::AbstractBlob) = isempty(frames_depot(ab))
 ## --.--. - .-. .- .--.-.- .- .---- ... . .-.-.-.- 
 # blobyref
 
-blobyref(ab::AbstractBlob, key; rT = Int) = 
-    blobyref(ab, _default_id(ab), key; rT)
+blobyref(ab::AbstractBlob, key; rT = Any, abs = true) = 
+    blobyref(ab, _dflt_frameid(ab), key; rT, abs)
+
+## --.--. - .-. .- .--.-.- .- .---- ... . .-.-.-.- 
+# :set! = setindex! f() to ram
+# :setser! = set! and then serialize!
+# :get! = get! f() from ram/disk
+# ::getser! = get! and then, if  issing, serialize!
+# :dry = run f() return empty ref
+function blobyio!(f::Function, ab::AbstractBlob, mode::Symbol, frame, key::String)
+    if mode == :set!
+        val = f()
+        setindex!(ab, val, frame, key)
+        return blobyref(ab, frame, key; rT = typeof(val))
+    end
+    if mode == :setser!
+        val = f()
+        setindex!(ab, val, frame, key)
+        serialize!(ab)
+        return blobyref(ab, frame, key, rT = typeof(val))
+    end
+    # TODO: Think about it
+    # What to do if 'frame, key' is missing
+    # if mode == :get
+    #     val = get(f, ab, frame, key)
+    #     return blobyref(ab, frame, key, typeof(val))
+    # end
+    if mode == :get!
+        val = get!(f, ab, frame, key)
+        return blobyref(ab, frame, key, rT = typeof(val))
+    end
+    if mode == :getser!
+        _ser_flag = false
+        val = get!(ab, frame, key) do
+            _ser_flag = true
+            return f()
+        end
+        _ser_flag && serialize!(ab)
+        return blobyref(ab, frame, key; rT = typeof(val))
+    end
+    if mode == :dry
+        val = f()
+        return blobyref(ab, frame, key; rT = typeof(val))
+    end
+    error("Unknown mode, ", mode, ". see blobyio! src")
+end
+blobyio!(f::Function, ab::AbstractBlob, mode::Symbol, key::String) = 
+    blobyio!(f, ab, mode, _dflt_frameid(ab), key)
+
+
+## --.--. - .-. .- .--.-.- .- .---- ... . .-.-.-.- 
+function _hashio!(ab::AbstractBlob, val, mode = :getser!; 
+        prefix = "cache", 
+        hashfun = hash, 
+        abs = true, 
+        key = "val"
+    )
+    frame = string(prefix, ".", repr(hashfun(val)))
+    ref = blobyref(ab, frame, key; rT = typeof(val), abs)
+    blobyio!(() -> val, ref, mode; ab)
+    # blobyio!(() -> val, mode, frame, key; ab)
+    return ref
+end

@@ -25,9 +25,10 @@ const ABS_FRAME_DEPOT_TYPE = OrderedDict
 const VFRAME_DEPOT_TYPE = OrderedDict{UInt128, BLOB_DEPOT_TYPE}
 const DFRAME_DEPOT_TYPE = BLOB_DEPOT_TYPE
 
-const BFRAME_FRAME_TYPE = :Bframe
-const bFRAME_FRAME_TYPE = :bframe
-const bbFRAME_FRAME_TYPE = :bbframe
+const B_BFRAME_FRAME_TYPE = :Bframe
+const bb_bFRAME_FRAME_TYPE = :bframe
+const bb_bbFRAME_FRAME_TYPE = :bbframe
+const b_uFRAME_FRAME_TYPE = :uframe   # frame of a blob
 
 ## .-- . -. - .--..- -- .- - --..-.-.- .- -.--
 # File wrapper

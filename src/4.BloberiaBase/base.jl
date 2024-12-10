@@ -2,6 +2,8 @@
 # Constructor
 Bloberia(root) = Bloberia(root, FRAMES_DEPOT_TYPE(), TEMP_DEPOT_TYPE())
 
+## --.--. - .-. .- .--.-.- .- .---- ... . .-.-.-.- 
+# shallow copy 
 import Base.copy
 Base.copy(B::Bloberia) = Bloberia(B.root) 
 
@@ -20,7 +22,7 @@ bloberiapath(bo::BlobyObj) = bloberiapath(bloberia(bo))
 ## --.--. - .-. .- .--.-.- .- .---- ... . .-.-.-.- 
 # getframe interface
 
-_default_id(::Bloberia) = "meta"
+_dflt_frameid(::Bloberia) = "meta"
 # The root to frames files (frame interface)
 _frames_root(B::Bloberia) = B.root
 
@@ -41,7 +43,8 @@ getmeta(B::Bloberia) = _getmeta(B).dat
     
 # Reimplementations
 function getframe(B::Bloberia, id)
-    id == "meta" || error("Bloberia only have a 'meta' frame")
+    # TAI, add 
+    id == META_FRAMEID || error("Bloberia only have a 'meta' frame")
     getmeta(B)
 end
 getframe(B::Bloberia) = getmeta(B)
@@ -56,6 +59,12 @@ function _lock_obj_identity_hash(B::Bloberia, h0 = UInt64(0))::UInt64
     h = hash(:Bloberia, h)
     h = hash(bloberiapath(B), h)
     return h
+end
+
+function unlock_batches(B::Bloberia; force = true)
+    for bb in B
+        unlock(bb; force)
+    end
 end
 
 ## --.--. - .-. .- .--.-.- .- .---- ... . .-.-.-.- 
@@ -86,42 +95,52 @@ function isoverflowed(bb::BlobBatch)
 end
 
 ## --.--. - .-. .- .--.-.- .- .---- ... . .-.-.-.- 
-# close/open interface
-# if it close it should be read only
-# serialization must fail
-# TODO: think per frame close (maybe a readonly flag)
-import Base.isopen
-function Base.isopen(bb::BlobBatch)
-    return get(getmeta(bb), "bb.isopen", true)::Bool
+# # 250000
+# function __blobcount_tout_cb(_lk, _tot_count, _isout, _tout, _t0)
+#     _tot_count[] = 0
+#     _isout[] = false
+
+#     return (_bb) -> let
+#         @show _bb
+#         _isout[] = tout > 0 && time() - _t0 > tout
+#         _isout[] && return :break
+#         _count = blobcount(_bb)
+#         lock(_lk) do
+#             _tot_count[] += _count
+#         end
+#     end
+# end
+
+function _blobcount_tout(B::Bloberia, bbid_prefix, tout)
+    _lk = ReentrantLock()
+    _tot_count = 0
+    _t0 = time()
+    _isout = false
+
+    ch_size = nthreads() * 2
+    n_tasks = nthreads()
+    foreach_batch(
+        B, bbid_prefix; ch_size, n_tasks
+    ) do _bb
+        _isout = tout > 0 && time() - _t0 > tout
+        _isout && return :break
+        _count = blobcount(_bb)
+        lock(_lk) do
+            _tot_count += _count
+        end
+    end
+    return (_isout, _tot_count)
 end
 
-function open!(bb::BlobBatch)
-    setindex!(getmeta(bb), true, "bb.isopen")
+function blobcount(B::Bloberia, bbid_prefix = nothing)
+    _, count = _blobcount_tout(B::Bloberia, bbid_prefix, Inf)
+    return count
 end
 
-function close!(bb::BlobBatch)
-    setindex!(getmeta(bb), false, "bb.isopen")
+import Base.filesize
+function Base.filesize(B::Bloberia)
+    return _recursive_filesize(bloberiapath(B))
 end
-
-## --.--. - .-. .- .--.-.- .- .---- ... . .-.-.-.- 
-# TODO: add tests
-import Base.delete!
-function Base.delete!(bb::BlobBatch)
-    rm(batchpath(bb); force = true, recursive = true)
-end
-
-function delete_bframe!(bb::BlobBatch, frame)
-    # ram
-    delete!(bb.bframes, frame)
-    # disk
-    _path = bframe_jlspath(bb, frame)
-    rm(_path; force = true, recursive = true)
-    return nothing
-end
-
-
-
-
 
 
 
@@ -198,21 +217,6 @@ end
 #             _tot_count[] += _count
 #         end
 #     end
-# end
-
-# function _blobcount_tout(B::Bloberia, bbid_prefix, tout)
-#     lk = ReentrantLock()
-#     _tot_count = Ref(0)
-#     _t0 = time()
-#     _isout = Ref(false)
-
-#     ch_size = nthreads() * 10
-#     n_tasks = nthreads() * 10
-#     foreach_batch(
-#         __blobcount_tout_cb(_tot_count, _isout, tout), 
-#         B, bbid_prefix; ch_size, n_tasks
-#     )
-#     return (_isout[], _tot_count[])
 # end
 
 # # TODO: cache on meta blobcount aeach time you serialized! buuids

@@ -14,21 +14,22 @@ function frames_depot(b::Blob)
     b_depot = FRAMES_DEPOT_TYPE()
     _u = b.uuid
     for (id, fr) in frames_depot(b.bb)
-        _frame_fT(fr) == bFRAME_FRAME_TYPE || continue
+        _frame_fT(fr) == bb_bFRAME_FRAME_TYPE || continue
         haskey(fr.dat, _u) || continue
-        b_depot[id] = frame
+        dat = fr.dat[_u]
+        b_depot[id] = BlobyFrame{b_uFRAME_FRAME_TYPE, typeof(dat)}(b, id, "", dat)
     end
     b_depot
 end
 
 # The root to frames files
 _frames_root(b::Blob) = _frames_root(b.bb)
-_default_id(::Blob) = "b0"
+_dflt_frameid(::Blob) = "b0"
 
 # frame validation
 function _is_valid_access(::Blob, fT) 
     fT == bUUIDS_FRAME_TYPE && return true
-    fT == bFRAME_FRAME_TYPE && return true
+    fT == bb_bFRAME_FRAME_TYPE && return true
     return false
 end
 
@@ -58,7 +59,7 @@ getframe!(b::Blob, id) = getbframe!(b, id)
 function foreach_bframe(f::Function, b::Blob, id0 = nothing)
     _u = b.uuid
     for (id, fr) in frames_depot(b.bb)
-        _frame_fT(fr) == bFRAME_FRAME_TYPE || continue
+        _frame_fT(fr) == bb_bFRAME_FRAME_TYPE || continue
         haskey(fr.dat, _u) || continue
 
         _do = isnothing(id0) 
@@ -70,6 +71,9 @@ function foreach_bframe(f::Function, b::Blob, id0 = nothing)
 end
 
 ## --.--. - .-. .- .--.-.- .- .---- ... . .-.-.-.- 
+# TODO: This have an ill interaction with onmiss loading.
+# - onmiss means that theframe is empty, and a blob only emprt! a fraction of the frame
+# - it is a problem? maybe not
 import Base.empty!
 function Base.empty!(b::Blob, id = nothing)
     _u = b.uuid
@@ -88,3 +92,31 @@ function Base.isempty(b::Blob, id = nothing)
     end
     return !_hassome
 end
+
+## --.--. - .-. .- .--.-.- .- .---- ... . .-.-.-.- 
+_show_bframes(io::IO, b::Blob) =
+    _show_kT_frames(io, b, 
+        b_uFRAME_FRAME_TYPE, 
+        "Ram uframes"
+    ) do kT_pairs, _u_frame
+        for (key, val) in _u_frame
+            push!(kT_pairs, string(key) => typeof(val))
+        end
+    end
+
+import Base.show
+function Base.show(io::IO, b::Blob)
+    print(io, "Blob(")
+    printstyled(io, repr(b.uuid); color = :blue)
+    print(io, ")")
+
+    _show_bframes(io, b) 
+end
+
+## --.--. - .-. .- .--.-.- .- .---- ... . .-.-.-.- 
+# hashio!
+hashio!(b::Blob, val, mode = :get!; 
+    prefix = "cache", 
+    hashfun = hash, 
+    abs = true, 
+) = _hashio!(b, val, mode; prefix, hashfun, abs)

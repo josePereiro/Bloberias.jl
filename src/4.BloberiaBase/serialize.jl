@@ -28,13 +28,9 @@ function serialize!(B::Bloberia; lk = true)
     onserialize!(B)
 
     # meta
-    if lk
-        lock(B, "serialize!") do
-            serialize_meta!(B)
-        end
-    else
+    __dolock(B, lk) do
         serialize_meta!(B)
     end
-
+    
     return B
 end
