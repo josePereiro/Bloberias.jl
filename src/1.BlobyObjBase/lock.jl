@@ -19,7 +19,9 @@ end
 function _pidfile_path(bo::BlobyObj, args...; B = bloberia(bo))
     root = bloberiapath(B)
     _hash = _lock_obj_identity_hash(bo, UInt(0)) 
-    _hash = _col_hash(args, _hash) # custom extra args...
+    if !isempty(args)
+        _hash = _col_hash(args, _hash) # custom extra args...
+    end
     _name = string(typeof(bo), ".", repr(_hash), ".pidfile")
     return joinpath(root, "_locks", _name)
 end
@@ -35,14 +37,14 @@ end
 
 import Base.lock
 function Base.lock(f::Function, bo::BlobyObj, args...; kwargs...) 
+
     lk = getlockfile(bo, args...)
-    lock(f, lk; kwargs...)
+    return lock(f, lk; kwargs...)
 end
 
 function Base.lock(bo::BlobyObj, args...; kwargs...) 
     lk = getlockfile(bo, args...)
-    lock(lk; kwargs...)
-    return bo
+    return lock(lk; kwargs...)
 end
 
 import Base.islocked

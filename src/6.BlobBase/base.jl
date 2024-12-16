@@ -119,4 +119,5 @@ hashio!(b::Blob, val, mode = :get!;
     prefix = "cache", 
     hashfun = hash, 
     abs = true, 
-) = _hashio!(b, val, mode; prefix, hashfun, abs)
+    key = "val"
+) = _hashio!(b, val, mode; prefix, hashfun, abs, key)

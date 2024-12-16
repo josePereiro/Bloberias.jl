@@ -3,7 +3,7 @@
 
 function blobbatch(B::Bloberia, bbid0) # existing batch
     bb = BlobBatch(B, bbid0)
-    isdir(bb) && error("Batch not found, bbid0: ", repr(bbid0))
+    isdir(bb) || error("Batch not found, bbid0: ", repr(bbid0))
     return bb
 end
 

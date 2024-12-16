@@ -43,37 +43,6 @@ _show_bbframes(io::IO, bb::BlobBatch) =
         end
     end
 
-function _show_disk_files(io::IO, bb::BlobBatch; 
-            filt = "", 
-            fc = :normal, 
-            bc = :normal,
-            sc = :blue
-        )
-    
-    _root = batchpath(bb)
-    b_files = isdir(bb) ? readdir(_root; join = false) : []
-    isempty(b_files) && return
-    sort!(b_files; by = _bb_show_file_sortby)
-    _npad = maximum(length.(b_files); init = 0)
-    print(io, "\n\nDisk files: \n")
-    for name in b_files
-        path = joinpath(_root, name)
-        endswith(path, ".jls") || continue
-        contains(path, filt) || continue
-        val, unit = _canonical_bytes(filesize(path))
-        print(io, "   ")
-        _file_str = rpad(string("\"", name, "\" "), _npad + 4, ' ')
-        printstyled(io, _file_str; color = fc)
-        print(io, " ")
-        _size_str = string(round(val; digits = 3), " ", unit)
-        printstyled(io, _size_str; color = sc)
-        print(io, "\n")
-    end
-    print(io, "\ndisk usage: ")
-    val, unit = _canonical_bytes(filesize(bb))
-    _size_str = string(round(val; digits = 3), " ", unit)
-    printstyled(io, _size_str; color = sc)
-end
 
 import Base.show
 function Base.show(io::IO, bb::BlobBatch)
@@ -92,7 +61,10 @@ function Base.show(io::IO, bb::BlobBatch)
     _show_bbframes(io, bb)
 
     # disk
-    _show_disk_files(io, bb)
+    _show_disk_files(io, batchpath(bb)) do path
+        endswith(path, ".jls") || return false
+        return true
+    end
 
     nothing
 

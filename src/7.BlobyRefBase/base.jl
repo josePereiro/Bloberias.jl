@@ -20,6 +20,10 @@ upref!(::BlobyRef, db) = error("Not implemented")
 deref(::BlobyRef) = error("Not implemented")
 
 ## --.--. - .-. .- .--.-.- .- .---- ... . .-.-.-.- 
+const _REF_ORDERED_PATH = ["B.root", "bb.id", "b.uuid", "val.frame", "val.key"]
+const _REF_ORDERED_COLORS = [:light_green, :yellow, :cyan, :blue, :blue]
+
+## --.--. - .-. .- .--.-.- .- .---- ... . .-.-.-.- 
 import Base.getindex
 Base.getindex(ref::BlobyRef{lT, rT}) where {lT, rT} = deref(ref)::rT
 
@@ -32,15 +36,9 @@ _repr(o) = repr(o)
 
 function Base.show(io::IO, ref::BlobyRef)
     i = 0
-    for (pel, color) in [
-            ("B.root", :light_green), 
-            ("bb.id", :green), 
-            ("b.uuid", :cyan), 
-            ("val.frame", :blue), 
-            ("val.key", :blue)
-        ]
+    for (pel, color) in zip(_REF_ORDERED_PATH, _REF_ORDERED_COLORS)
         haskey(ref.link, pel) || continue
-        i != 0 && printstyled(io, "//"; color = :normal)
+        i != 0 && printstyled(io, "/"; color = :normal)
         printstyled(io, _repr(ref.link[pel]); color)
         i += 1
     end
@@ -59,3 +57,15 @@ function blobyio!(f::Function,
     blobyio!(f, ab, frame, key, mode)
     return ab
 end
+
+## --.--. - .-. .- .--.-.- .- .---- ... . .-.-.-.- 
+import Base.hash
+# order is not important
+function Base.hash(bf::BlobyRef, h::UInt)
+    h = hash(:BlobyRef, h)
+    return _combhash(bf.link...; h0 = h)
+end
+
+## --.--. - .-. .- .--.-.- .- .---- ... . .-.-.-.- 
+Base.abspath
+Base.abspath(ref::BlobyRef) = string(ref)

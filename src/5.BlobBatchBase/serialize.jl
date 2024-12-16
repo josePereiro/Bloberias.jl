@@ -19,12 +19,12 @@ end
 # --.--. - .-. .- .--.-.- .- .---- ... . .-.-.-.- 
 function serialize_meta!(bb::BlobBatch)
     path = frame_path(bb, META_FRAMEID)
-    _serialize(path, _getmeta(bb))
+    _serialize_frame(path, _getmeta(bb))
 end
 
 function serialize_buuids!(bb::BlobBatch)
     path = frame_path(bb, bUUIDS_FRAMEID)
-    _serialize(path, _getbuuids(bb))
+    _serialize_frame(path, _getbuuids(bb))
 end
 
 serialize_bbframes!(bb::BlobBatch) = 

@@ -13,8 +13,9 @@ hasframe_disk(ab::AbstractBlob, id::String) = isfile(_frame_path(_frames_root(ab
 hasframe_disk(ab::AbstractBlob) = hasframe_disk(ab, _dflt_frameid(ab))
 
 # errorless
-function _serialize_frame(path, frame::BlobyFrame, )
-    _serialize(path, 
+function _serialize_frame(path, frame::BlobyFrame)
+    _mkpath(path)
+    serialize(path, 
         (;
             dat = frame.dat, 
             path = frame.path, 
@@ -26,7 +27,7 @@ function _serialize_frame(path, frame::BlobyFrame, )
 end
 
 function _deserialize_frame(ab::AbstractBlob, fpath)
-    ft = _deserialize(fpath)
+    ft = deserialize(fpath)
     # @assert ft.path == fpath
     return BlobyFrame{ft.fT, ft.dT}(ab, ft.id, ft.path, ft.dat)
 end
@@ -242,10 +243,25 @@ end
 
 ## --.--. - .-. .- .--.-.- .- .---- ... . .-.-.-.- 
 import Base.merge!
-function Base.merge!(ab::AbstractBlob, frame::AbstractString, vals)
+function Base.merge!(ab::AbstractBlob, frameid::AbstractString, vals)
     for (k, v) in vals
-        setindex!(ab, v, frame, k)
+        setindex!(ab, v, frameid, k)
     end
 end
-Base.merge!(ab::AbstractBlob, vals) = 
-    merge!(ab, _dflt_frameid(ab), vals)
+Base.merge!(ab::AbstractBlob, vals; ow = true) = 
+    merge!(ab, _dflt_frameid(ab), vals; ow)
+
+## --.--. - .-. .- .--.-.- .- .---- ... . .-.-.-.- 
+import Base.hash
+function Base.hash(ab::AbstractBlob, h::UInt)
+    T = typeof(ab)
+    h = hash(T, h)
+    for sym in fieldnames(T)
+        v = getfield(ab, sym)
+        _valid = v isa AbstractString
+        _valid |= v isa Number
+        _valid || continue
+        h = hash(v, h)
+    end
+    return h
+end

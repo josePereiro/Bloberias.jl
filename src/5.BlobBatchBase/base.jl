@@ -91,6 +91,23 @@ function getframe!(bb::BlobBatch, id)
 end
 
 ## --.--. - .-. .- .--.-.- .- .---- ... . .-.-.-.- 
+# TODO: rethink frame: 
+# - reading (reading the content of the frame but not modifying the blob)
+# - reset (discarding ram version and try/loading disk version into blob)
+# - writing (just serializing)
+# - get (get ram or load on demand)
+
+
+## --.--. - .-. .- .--.-.- .- .---- ... . .-.-.-.- 
+# force disk version
+function resetframe!(bb::BlobBatch, id)
+    frames = frames_depot(bb)
+    haskey(frames, id) && delete!(frames, id)
+    return getframe!(bb, id)
+end
+
+
+## --.--. - .-. .- .--.-.- .- .---- ... . .-.-.-.- 
 # An identity hash for the object
 function _lock_obj_identity_hash(bb::BlobBatch, h0 = UInt64(0))::UInt64
     h = hash(h0)
@@ -124,6 +141,8 @@ function Base.rm(bb::BlobBatch)
     rm(batchpath(bb); force = true, recursive = true)
 end
 
+
+
 function delete_bframe!(bb::BlobBatch, frame)
     # ram
     delete!(bb.bframes, frame)
@@ -137,7 +156,6 @@ import Base.filesize
 function Base.filesize(bb::BlobBatch)
     return _recursive_filesize(batchpath(bb))
 end
-
 
 ## --.--. - .-. .- .--.-.- .- .---- ... . .-.-.-.- 
 # hashio!

@@ -25,16 +25,6 @@ function _mkpath(path)
     mkpath(dir)
 end
 
-function _deserialize(path::AbstractString)
-    deserialize(path)
-end
-
-function _serialize(path::AbstractString, value)
-    _mkpath(path)
-    serialize(path, value)
-end
-
-
 function _quoted_join(col, sep)
     strs = String[]
     for el in col
@@ -61,14 +51,6 @@ function _pretty_print_pairs(io::IO, k, v)
     printstyled(io, string(v); color = :blue)
 end
 
-function _hashed_id(s::AbstractString, args...)
-    h0 = hash(0)
-    for a in args
-        h0 = hash(a, h0)
-    end
-    return string(s, repr(h0))
-end
-
 # function _field_hash(obj, h = 0)
 #     h = hash(h)
 #     for f in fieldnames(typeof(obj))
@@ -83,6 +65,14 @@ end
 #     return h
 # end
 
+# order is not important
+function _combhash(comb...; h0 = zero(UInt))
+    h = h0
+    for x in comb
+        h ⊻= hash(x)
+    end
+    return h
+end
 
 function _recursive_filesize(root0)
     fsize = 0.0;
@@ -102,3 +92,34 @@ function _getindex(os::OrderedSet, i0)
 end
 
 _constant(v) = (x...) -> v 
+
+function _show_disk_files(filter::Function, io::IO, root; 
+            fc = :normal, 
+            bc = :normal,
+            sc = :blue
+        )
+    
+    names = isdir(root) ? readdir(root; join = false) : []
+    isempty(names) && return
+    sort!(names; by = _bb_show_file_sortby)
+    _npad = maximum(length.(names); init = 0)
+    print(io, "\n\nDisk files: \n")
+    for name in names
+        path = joinpath(root, name)
+
+        filter(path) === true || continue
+
+        val, unit = _canonical_bytes(filesize(path))
+        print(io, "   ")
+        _file_str = rpad(string("\"", name, "\" "), _npad + 4, ' ')
+        printstyled(io, _file_str; color = fc)
+        print(io, " ")
+        _size_str = string(round(val; digits = 3), " ", unit)
+        printstyled(io, _size_str; color = sc)
+        print(io, "\n")
+    end
+    print(io, "\ndisk usage: ")
+    val, unit = _canonical_bytes(_recursive_filesize(root))
+    _size_str = string(round(val; digits = 3), " ", unit)
+    printstyled(io, _size_str; color = sc)
+end

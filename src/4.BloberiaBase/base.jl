@@ -61,10 +61,22 @@ function _lock_obj_identity_hash(B::Bloberia, h0 = UInt64(0))::UInt64
     return h
 end
 
-function unlock_batches(B::Bloberia; force = true)
+function unlock_batches(B::Bloberia; force = false)
     for bb in B
         unlock(bb; force)
     end
+end
+
+function lockcount(B)
+    root = bloberiapath(B)
+    lkdir = joinpath(root, "_locks")
+    isdir(lkdir) || return 0
+    c = 0
+    for name in readdir(lkdir)
+        endswith(name, ".pidfile") || continue
+        c += 1
+    end
+    return c
 end
 
 ## --.--. - .-. .- .--.-.- .- .---- ... . .-.-.-.- 

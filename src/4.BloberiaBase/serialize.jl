@@ -18,7 +18,7 @@ end
 # --.--. - .-. .- .--.-.- .- .---- ... . .-.-.-.- 
 function serialize_meta!(B::Bloberia)
     path = frame_path(B, "meta")
-    _serialize(path, _getmeta(B))
+    _serialize_frame(path, _getmeta(B))
 end
 
 ## --.--. - .-. .- .--.-.- .- .---- ... . .-.-.-.- 
@@ -28,7 +28,7 @@ function serialize!(B::Bloberia; lk = false)
     onserialize!(B)
 
     # meta
-    __dolock(B, lk) do
+    __dolock(B, lk; force = false) do
         serialize_meta!(B)
     end
     
