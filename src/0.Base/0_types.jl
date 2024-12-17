@@ -1,3 +1,5 @@
+#TODO: check https://docs.julialang.org/en/v1/base/collections/#Dictionaries for cool Dictlike datatypes
+
 ## .-- . -. - .--..- -- .- - --..-.-.- .- -.--
 # The base object
 abstract type BlobyObj end
@@ -6,10 +8,6 @@ abstract type BlobyObj end
 # - It can run on top of a Bloberia
 
 ## .-- . -. - .--..- -- .- - --..-.-.- .- -.--
-# Data types
-# const BLOB_BFRAMES_TYPE = OrderedDict{String, FRAME_TYPE}
-# const BB_DFRAMES_TYPE = OrderedDict{String, FRAME_TYPE}
-
 const TEMP_DEPOT_TYPE = OrderedDict{String, Any}
 
 const bUUIDS_DEPOT_TYPE = OrderedSet{UInt128}

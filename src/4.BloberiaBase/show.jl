@@ -1,10 +1,13 @@
 ## --.--. - .-. .- .--.-.- .- .---- ... . .-.-.-.- 
-function _prefix_0x(dir)
-    _prefset = Dict{String, Int}()
+function _prefix_0x_summary(dir)
+    _prefset = Dict{String, Dict}()
     for name in readdir(dir)
         pref = first(split(name, ".0x"))
-        get!(_prefset, pref, 0)
-        _prefset[pref] += 1
+        _dat = get!(_prefset, pref, Dict())
+        get!(_dat, "count", 0)
+        _dat["count"] += 1
+        get!(_dat, "disk", 0.0)
+        _dat["disk"] += _recursive_filesize(joinpath(dir, name))
     end
     _prefset
 end
@@ -35,15 +38,19 @@ function Base.show(io::IO, B::Bloberia)
     )
 
     if _isdir
-        _prefixhist = _prefix_0x(B.root)
+        _prefixhist = _prefix_0x_summary(B.root)
         _prefixs = collect(keys(_prefixhist)) |> sort!
         print(io, "\n x0 prefixes: \n")
         for prex in _prefixs
+            meta = _prefixhist[prex]
             print(io, "   ")
             printstyled(io, prex; color = :normal)
             printstyled(io, " ["; color = :normal)
-            printstyled(io, _prefixhist[prex]; color = :blue)
+            printstyled(io, meta["count"]; color = :blue)
             printstyled(io, " folder(s)"; color = :blue)
+            printstyled(io, " "; color = :blue)
+            val, unit = _canonical_bytes(meta["disk"])
+            printstyled(io, string(round(val; digits = 3), " ", unit); color = :blue)
             printstyled(io, "]"; color = :normal)
             println(io)
         end
