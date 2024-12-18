@@ -1,7 +1,7 @@
 name = "Bloberias"
 uuid = "c7313018-426c-4109-b567-6f433e2229c2"
 authors = ["josePereiro <jose.pereiro.personal@gmail.com> and contributors"]
-version = "0.4.0"
+version = "0.4.1"
 
 [deps]
 Dates = "ade2ca70-3891-5945-98fb-dc099432e06a"
