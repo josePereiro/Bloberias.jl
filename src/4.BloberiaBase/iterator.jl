@@ -9,13 +9,18 @@ end
 
 ## --.--. - .-. .- .--.-.- .- .---- ... . .-.-.-.- 
 # iterate batch dirs
+_rettrue(x...) = true
+function _eachbatchdir_gen(B::Bloberia, sortfun::Function)
+    root0 = bloberiapath(B)
+    paths = sortfun(readdir(root0; join = true))
+    paths = isdir(root0) ? paths : String[]
+    return (path for path in paths if _is_bbpath_heuristic(path))
+end
+
+
 function _eachbatchdir_ch(B::Bloberia, ch_size, sortfun)
     return Channel{String}(ch_size) do _ch
-        root0 = bloberiapath(B)
-        isdir(root0) || return
-        paths = sortfun(readdir(root0; join = true))
-        for path in paths
-            _is_bbpath_heuristic(path) || continue
+        for path in _eachbatchdir_gen(B, sortfun)
             put!(_ch, path)
         end
     end
@@ -50,7 +55,8 @@ function _eachbatch_th(B::Bloberia, bbid_prefix = nothing;
     @assert n_tasks > 0
     
     return Channel{BlobBatch}(ch_size) do _ch
-        dir_ch = _eachbatchdir_ch(B, n_tasks, sortfun)
+        # here I need the ch for locking
+        dir_ch = _eachbatchdir_ch(B, ch_size, sortfun)
         @sync for _ in 1:n_tasks
             @spawn for path in dir_ch
                 bb = _bb_from_path(B, path, bbid_prefix, preload)
@@ -70,7 +76,7 @@ function _eachbatch_ser(B::Bloberia, bbid_prefix = nothing;
     
     # channel
     return Channel{BlobBatch}(ch_size) do _ch
-        file_ch = _eachbatchdir_ch(B, 1, sortfun)
+        file_ch = _eachbatchdir_gen(B, sortfun)
         for path in file_ch
             bb = _bb_from_path(B, path, bbid_prefix, preload)
             isnothing(bb) && continue
@@ -168,24 +174,24 @@ end
 
 ## --.--. - .-. .- .--.-.- .- .---- ... . .-.-.-.- 
 # Iterator
-function _B_iterate_next(ch, ch_next)
-    isnothing(ch_next) && return nothing
-    item, ch_state = ch_next
-    B_state = (ch, ch_state)
+function _B_iterate_next(iter, iter_next)
+    isnothing(iter_next) && return nothing
+    item, ch_state = iter_next
+    B_state = (iter, ch_state)
     return (item, B_state)
 end
 
 import Base.iterate
 function Base.iterate(B::Bloberia)
-    ch = eachbatch(B)
-    ch_next = iterate(ch)
-    return _B_iterate_next(ch, ch_next)
+    iter = _eachbatchdir_gen(B, identity)
+    iter_next = iterate(iter)
+    return _B_iterate_next(iter, iter_next)
 end
 
 function Base.iterate(::Bloberia, B_state) 
     isnothing(B_state) && return nothing
-    ch, ch_state = B_state
-    ch_next = iterate(ch, ch_state)
-    return _B_iterate_next(ch, ch_next)
+    iter, iter_state = B_state
+    iter_next = iterate(iter, iter_state)
+    return _B_iterate_next(iter, iter_next)
 end
 

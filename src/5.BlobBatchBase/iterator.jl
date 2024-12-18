@@ -3,8 +3,8 @@
 
 ## --.--. - .-. .- .--.-.- .- .---- ... . .-.-.-.- 
 # This is running sllow, see vblobcount(B)
-function eachblob(bb::BlobBatch)
-    return Channel{Blob}(0) do _ch
+function eachblob_ch(bb::BlobBatch; ch_size = 0)
+    return Channel{Blob}(ch_size) do _ch
         buuids = getbuuids(bb)
         for uuid in buuids
             # I do not need to check if blob exist
@@ -14,27 +14,32 @@ function eachblob(bb::BlobBatch)
     end
 end
 
+function eachblob(bb::BlobBatch)
+    buuids = getbuuids(bb)
+    return (Blob(bb, uuid) for uuid in buuids)
+end
+
 # --.--. - .-. .- .--.-.- .- .---- ... . .-.-.-.- 
 # Iterator
-function _bb_iterate_next(ch::Channel, ch_next)
-    isnothing(ch_next) && return nothing
-    item, ch_state = ch_next
-    bb_state = (ch, ch_state)
+function _bb_iterate_next(iter, iter_next)
+    isnothing(iter_next) && return nothing
+    item, iter_state = iter_next
+    bb_state = (iter, iter_state)
     return (item, bb_state)
 end
 
 import Base.iterate
 function Base.iterate(bb::BlobBatch)
-    ch = eachblob(bb)
-    ch_next = iterate(ch)
-    return _bb_iterate_next(ch, ch_next)
+    iter = eachblob(bb)
+    iter_next = iterate(iter)
+    return _bb_iterate_next(iter, iter_next)
 end
 
 function Base.iterate(::BlobBatch, bb_state) 
     isnothing(bb_state) && return nothing
-    ch, ch_state = bb_state
-    ch_next = iterate(ch, ch_state)
-    return _bb_iterate_next(ch, ch_next)
+    iter, iter_state = bb_state
+    iter_next = iterate(iter, iter_state)
+    return _bb_iterate_next(iter, iter_next)
 end
 
 import Base.length
