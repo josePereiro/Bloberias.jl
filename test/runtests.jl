@@ -252,6 +252,21 @@ using Test
                 end 
             end
         end
+        
+        ## .-- . -. - .--..- -- .- - --..-.-.- .- -.--
+        println("\n", "-"^40)
+        @info("Test get interface")
+        let
+            B = Bloberia(B_ROOT)
+            rm(B)
+            bb = blobbatch!(B, "test")
+            b = rblob!(bb)
+            for ab in [B, bb, b]
+                # ram only
+                @test_throws ["not found"] ab["val"]
+                @test get(ab, "val", 0) === 0
+            end
+        end
 
         ## .-- . -. - .--..- -- .
         println("\n", "-"^40)

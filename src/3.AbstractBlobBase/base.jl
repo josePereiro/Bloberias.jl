@@ -141,6 +141,7 @@ Base.setindex!(ab::AbstractBlob, val, ref::BlobyRef) =
 
 import Base.get
 function Base.get(dflt::Function, ab::AbstractBlob, frameid, key)
+    hasframe(ab, frameid) || return dflt()
     frame = getframe(ab, frameid)
     return get(dflt, frame, key)
 end
