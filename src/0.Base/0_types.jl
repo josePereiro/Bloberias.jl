@@ -5,23 +5,20 @@
 abstract type BlobyObj end
 
 # IDEA: dev ContextDB interface in another package
-# - It can run on top of a Bloberia
+# - It can run on top of Bloberia
 
 ## .-- . -. - .--..- -- .- - --..-.-.- .- -.--
-const TEMP_DEPOT_TYPE = OrderedDict{String, Any}
+# depot types
+const UUIDS_DEPOT_TYPE = OrderedSet{UInt128}
+const DICT_DEPOT_TYPE = OrderedDict{String, Any}
+const VECDICT_DEPOT_TYPE = OrderedDict{UInt128, DICT_DEPOT_TYPE}
 
-const bUUIDS_DEPOT_TYPE = OrderedSet{UInt128}
+# frames id/fT
 const bUUIDS_FRAMEID = "buuids"
 const bUUIDS_FRAME_TYPE = :buuids
 
-const META_DEPOT_TYPE = OrderedDict{String, Any}
 const META_FRAMEID = "meta"
 const META_FRAME_TYPE = :meta
-
-const BLOB_DEPOT_TYPE = OrderedDict{String, Any}
-const ABS_FRAME_DEPOT_TYPE = OrderedDict
-const VFRAME_DEPOT_TYPE = OrderedDict{UInt128, BLOB_DEPOT_TYPE}
-const DFRAME_DEPOT_TYPE = BLOB_DEPOT_TYPE
 
 const B_BFRAME_FRAME_TYPE = :Bframe
 const bb_bFRAME_FRAME_TYPE = :bframe
@@ -33,9 +30,7 @@ const b_uFRAME_FRAME_TYPE = :uframe   # frame of a blob
 # fT::Symbol Frame type 
 # dT dat Type 
 struct BlobyFrame{fT, dT} <: BlobyObj
-    bo::BlobyObj # parent
     id::String   # id
-    path::String # path
     dat::dT      # content
 end
 
@@ -52,7 +47,7 @@ abstract type AbstractBlob <: BlobyObj end
 struct Bloberia <: AbstractBlob
     root::String
     frames::FRAMES_DEPOT_TYPE    # ram/disk frame
-    temp::TEMP_DEPOT_TYPE              # ram only frame
+    temp::DICT_DEPOT_TYPE              # ram only frame
 end
 
 ## .-- . -. - .--..- -- .- - --..-.-.- .- -.--
@@ -68,7 +63,7 @@ struct BlobBatch <: AbstractBlob
     root::String
     frames::FRAMES_DEPOT_TYPE    # ram/disk frame
     # ram only
-    temp::TEMP_DEPOT_TYPE
+    temp::DICT_DEPOT_TYPE
 end
 
 ## .-- . -. - .--..- -- .- - --..-.-.- .- -.--

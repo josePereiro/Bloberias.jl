@@ -5,7 +5,7 @@
 # This is running sllow, see vblobcount(B)
 function eachblob_ch(bb::BlobBatch; ch_size = 0)
     return Channel{Blob}(ch_size) do _ch
-        buuids = getbuuids(bb)
+        buuids = getbuuids!(bb)
         for uuid in buuids
             # I do not need to check if blob exist
             b = Blob(bb, uuid) 
@@ -15,7 +15,7 @@ function eachblob_ch(bb::BlobBatch; ch_size = 0)
 end
 
 function eachblob(bb::BlobBatch)
-    buuids = getbuuids(bb)
+    buuids = getbuuids!(bb)
     return (Blob(bb, uuid) for uuid in buuids)
 end
 

@@ -18,7 +18,8 @@ end
 # --.--. - .-. .- .--.-.- .- .---- ... . .-.-.-.- 
 function serialize_meta!(B::Bloberia)
     path = frame_path(B, "meta")
-    _serialize_frame(path, _getmeta(B))
+    fr = _depot_frame(B, "meta")
+    _serialize_frame(path, fr)
 end
 
 ## --.--. - .-. .- .--.-.- .- .---- ... . .-.-.-.- 

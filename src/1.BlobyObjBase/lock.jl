@@ -62,6 +62,6 @@ function Base.unlock(bo::BlobyObj, args...; force = false)
 end
 
 
-function __dolock(f::Function, bo::BlobyObj, lkflag, args...; kwargs...)
+function __dolock(f::Function, bo::BlobyObj, lkflag::Bool, args...; kwargs...)
     lkflag ? lock(f, bo, args...; kwargs...) : f()
 end

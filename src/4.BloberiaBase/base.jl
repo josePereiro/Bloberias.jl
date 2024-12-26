@@ -1,6 +1,6 @@
 ## --.--. - .-. .- .--.-.- .- .---- ... . .-.-.-.- 
 # Constructor
-Bloberia(root) = Bloberia(root, FRAMES_DEPOT_TYPE(), TEMP_DEPOT_TYPE())
+Bloberia(root) = Bloberia(root, FRAMES_DEPOT_TYPE(), DICT_DEPOT_TYPE())
 
 ## --.--. - .-. .- .--.-.- .- .---- ... . .-.-.-.- 
 # shallow copy 
@@ -18,39 +18,6 @@ _blobypath(B::Bloberia) = B.root
 bloberia(B::Bloberia) = B
 bloberiapath(B::Bloberia) = B.root
 bloberiapath(bo::BlobyObj) = bloberiapath(bloberia(bo))
-
-## --.--. - .-. .- .--.-.- .- .---- ... . .-.-.-.- 
-# getframe interface
-
-_dflt_frameid(::Bloberia) = "meta"
-# The root to frames files (frame interface)
-_frames_root(B::Bloberia) = B.root
-
-# frame validation
-function _is_valid_access(::Bloberia, fT) 
-    fT == META_FRAME_TYPE && return true
-    return false
-end
-
-## --.--. - .-. .- .--.-.- .- .---- ... . .-.-.-.- 
-# getframe interface
-
-frames_depot(B::Bloberia) = B.frames
-
-_getmeta(B::Bloberia) =
-     _getframe!(B, META_FRAMEID, META_FRAME_TYPE, META_DEPOT_TYPE)
-getmeta(B::Bloberia) = _getmeta(B).dat
-    
-# Reimplementations
-function getframe(B::Bloberia, id)
-    # TAI, add 
-    id == META_FRAMEID || error("Bloberia only have a 'meta' frame")
-    getmeta(B)
-end
-getframe(B::Bloberia) = getmeta(B)
-
-getframe!(B::Bloberia, id) = getframe(B, id)
-getframe!(B::Bloberia) = getframe(B)
 
 ## --.--. - .-. .- .--.-.- .- .---- ... . .-.-.-.- 
 # lock interface

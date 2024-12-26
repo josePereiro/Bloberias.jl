@@ -6,7 +6,7 @@ function onserialize!(bb::BlobBatch, args...)
     # default up meta
     meta = getmeta(bb)
     meta["serialization.last.time"] = time()
-    meta["blobs.cached.count"] = length(getbuuids(bb))
+    meta["blobs.cached.count"] = blobcount(bb)
     
     # custom
     for callback in BLOBBATCH_ONSERIELIZE_CALLBACKS
@@ -19,12 +19,12 @@ end
 # --.--. - .-. .- .--.-.- .- .---- ... . .-.-.-.- 
 function serialize_meta!(bb::BlobBatch)
     path = frame_path(bb, META_FRAMEID)
-    _serialize_frame(path, _getmeta(bb))
+    _serialize_frame(path, _depot_frame(bb, META_FRAMEID))
 end
 
 function serialize_buuids!(bb::BlobBatch)
     path = frame_path(bb, bUUIDS_FRAMEID)
-    _serialize_frame(path, _getbuuids(bb))
+    _serialize_frame(path, _depot_frame(bb, bUUIDS_FRAMEID))
 end
 
 serialize_bbframes!(bb::BlobBatch) = 

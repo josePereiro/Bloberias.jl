@@ -123,3 +123,25 @@ function _show_disk_files(filter::Function, io::IO, root;
     _size_str = string(round(val; digits = 3), " ", unit)
     printstyled(io, _size_str; color = sc)
 end
+
+## --.--. - .-. .- .--.-.- .- .---- ... . .-.-.-.- 
+# util callers
+_functionalize(f::Function) = f
+_functionalize(v::Any) = (x...) -> v
+
+function _trycall(call, onerr)
+    onerr = _functionalize(onerr)
+    call = _functionalize(call)
+    try; return call()
+        catch err; return onerr(err)
+    end
+end
+struct _IGNORE end
+_trycall(call, ::Type{_IGNORE}) = call()
+
+function _conditionalcall(ontrue, cond::Bool, onfalse)
+    ontrue = _functionalize(ontrue)
+    onfalse = _functionalize(onfalse)
+    return cond ? ontrue() : onfalse()
+end
+_conditionalcall(call, ::Type{_IGNORE}, onfail) = call()

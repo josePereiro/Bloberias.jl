@@ -1,7 +1,7 @@
 # ## --.--. - .-. .- .--.-.- .- .---- ... . .-.-.-.- 
 # get an existing blob
 function blob(bb::BlobBatch, uuid::Integer)
-    buuids = getbuuids(bb)
+    buuids = getbuuids!(bb)
     uuid ∈ buuids || error("Uuid ", repr(uuid), " not present")
     return Blob(bb, uuid)
 end
@@ -10,7 +10,7 @@ end
 function blob!(bb::BlobBatch, uuid::Integer)
     uuid = UInt128(uuid)
     b = Blob(bb, uuid)
-    buuids = getbuuids(bb)
+    buuids = getbuuids!(bb)
     uuid ∈ buuids && return b
     isfullbatch(bb) && error("The batch is full, see 'blobcount' and 'vbloblim'")
     push!(buuids, uuid)
@@ -24,7 +24,7 @@ rblob!(bb::BlobBatch) = blob!(bb, uuid_int())
 
 # ## --.--. - .-. .- .--.-.- .- .---- ... . .-.-.-.- 
 function blobcount(bb::BlobBatch)
-    buuids = getbuuids(bb)
+    buuids = getbuuids!(bb)
     return length(buuids)
 end 
 

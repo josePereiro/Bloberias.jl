@@ -28,10 +28,14 @@ module Bloberias
     
     #! include 3.AbstractBlobBase
     include("3.AbstractBlobBase/base.jl")
+    include("3.AbstractBlobBase/frames.base.jl")
+    include("3.AbstractBlobBase/frames.core.jl")
 
     #! include 4.BloberiaBase
     include("4.BloberiaBase/base.jl")
     include("4.BloberiaBase/blobbatch.jl")
+    include("4.BloberiaBase/frames.base.jl")
+    include("4.BloberiaBase/frames.core.jl")
     include("4.BloberiaBase/iterator.jl")
     include("4.BloberiaBase/serialize.jl")
     include("4.BloberiaBase/show.jl")
@@ -40,12 +44,16 @@ module Bloberias
     #! include 5.BlobBatchBase
     include("5.BlobBatchBase/base.jl")
     include("5.BlobBatchBase/blob.jl")
+    include("5.BlobBatchBase/frames.base.jl")
+    include("5.BlobBatchBase/frames.core.jl")
     include("5.BlobBatchBase/iterator.jl")
     include("5.BlobBatchBase/serialize.jl")
     include("5.BlobBatchBase/show.jl")
     
     #! include 6.BlobBase
     include("6.BlobBase/base.jl")
+    include("6.BlobBase/frames.base.jl")
+    include("6.BlobBase/frames.core.jl")
 
     #! include 7.BlobyRefBase
     include("7.BlobyRefBase/base.jl")
