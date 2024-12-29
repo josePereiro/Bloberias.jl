@@ -23,47 +23,30 @@ module Bloberias
     include("1.BlobyObjBase/base.jl")
     include("1.BlobyObjBase/lock.jl")
     
-    #! include 2.BlobyFrameBase
-    include("2.BlobyFrameBase/base.jl")
-    
-    #! include 3.AbstractBlobBase
-    include("3.AbstractBlobBase/base.jl")
-    include("3.AbstractBlobBase/frames.base.jl")
-    include("3.AbstractBlobBase/frames.core.jl")
+    #! include 2.AbstractBlobBase
+    include("2.AbstractBlobBase/base.jl")
+    include("2.AbstractBlobBase/depot.jl")
+    include("2.AbstractBlobBase/depotdisk.jl")
+    include("2.AbstractBlobBase/disk.jl")
 
-    #! include 4.BloberiaBase
-    include("4.BloberiaBase/base.jl")
-    include("4.BloberiaBase/blobbatch.jl")
-    include("4.BloberiaBase/frames.base.jl")
-    include("4.BloberiaBase/frames.core.jl")
-    include("4.BloberiaBase/iterator.jl")
-    include("4.BloberiaBase/serialize.jl")
-    include("4.BloberiaBase/show.jl")
+    #! include 3.BloberiaBase
+    include("3.BloberiaBase/base.jl")
+    include("3.BloberiaBase/blob.interface.jl")
+    include("3.BloberiaBase/blobbatch.jl")
     
-
-    #! include 5.BlobBatchBase
-    include("5.BlobBatchBase/base.jl")
-    include("5.BlobBatchBase/blob.jl")
-    include("5.BlobBatchBase/frames.base.jl")
-    include("5.BlobBatchBase/frames.core.jl")
-    include("5.BlobBatchBase/iterator.jl")
-    include("5.BlobBatchBase/serialize.jl")
-    include("5.BlobBatchBase/show.jl")
+    #! include 4.BlobBatchBase
+    include("4.BlobBatchBase/base.jl")
+    include("4.BlobBatchBase/blob.interface.jl")
+    include("4.BlobBatchBase/blob.jl")
     
-    #! include 6.BlobBase
-    include("6.BlobBase/base.jl")
-    include("6.BlobBase/frames.base.jl")
-    include("6.BlobBase/frames.core.jl")
-
-    #! include 7.BlobyRefBase
-    include("7.BlobyRefBase/base.jl")
-    include("7.BlobyRefBase/deref.jl")
-    include("7.BlobyRefBase/ref.jl")
+    #! include 5.bBlobBase
+    include("5.bBlobBase/base.jl")
+    include("5.bBlobBase/blob.interface.jl")
     
-    #! include 8.RefCacher
-    include("8.RefCacher/base.jl")
-    include("8.RefCacher/deref.jl")
 
     @exportall_words()
+
+    # TODO/Del only for dev
+    @exportall_underscore()
 
 end

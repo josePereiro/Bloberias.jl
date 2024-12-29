@@ -9,32 +9,45 @@ abstract type BlobyObj end
 
 ## .-- . -. - .--..- -- .- - --..-.-.- .- -.--
 # depot types
+const UUIDS_DEPOT_TYPE = OrderedSet{UInt128}
+const DICT_DEPOT_TYPE = OrderedDict{String, Any}
+const VECDICT_DEPOT_TYPE = OrderedDict{UInt128, DICT_DEPOT_TYPE}
 
-# TODO: Define type
-
-const UUIDS_DEPOT_TYPE = Set{UInt128}
-const DICT_DEPOT_TYPE = Dict{Any, Any}
-const VECDICT_DEPOT_TYPE = Dict{Any, Any}
-
+# frames id/fT
 const bUUIDS_FRAMEID = "buuids"
+const bUUIDS_FRAME_TYPE = :buuids
 
 const META_FRAMEID = "meta"
+const META_FRAME_TYPE = :meta
 
-const FRAMES_DEPOT_TYPE = Dict{Any, Any}
+const B_BFRAME_FRAME_TYPE = :Bframe
+const bb_bFRAME_FRAME_TYPE = :bframe
+const bb_bbFRAME_FRAME_TYPE = :bbframe
+const b_uFRAME_FRAME_TYPE = :uframe   # frame of a blob
+
+## .-- . -. - .--..- -- .- - --..-.-.- .- -.--
+# File wrapper
+# fT::Symbol Frame type 
+# dT dat Type 
+struct BlobyFrame{fT, dT} <: BlobyObj
+    id::String   # id
+    dat::dT      # content
+end
+
+const FRAMES_DEPOT_TYPE = Dict{String, BlobyFrame}
 
 ## .-- . -. - .--..- -- .- - --..-.-.- .- -.--
 # An indexable object to interact with data
-# Node in the blobtree
 abstract type AbstractBlob <: BlobyObj end
 
 ## .-- . -. - .--..- -- .- - --..-.-.- .- -.--
-# TODO: copy pkg README into Bloberia folder
+# TODO: copy pkg README into Bloberia
 
 # Top level object
 struct Bloberia <: AbstractBlob
-    root::String                 # root folder
+    root::String
     frames::FRAMES_DEPOT_TYPE    # ram/disk frame
-    temp::DICT_DEPOT_TYPE        # ram only frame
+    temp::DICT_DEPOT_TYPE              # ram only frame
 end
 
 ## .-- . -. - .--..- -- .- - --..-.-.- .- -.--
@@ -45,19 +58,20 @@ end
 # B (Bloberia)
 # ...
 struct BlobBatch <: AbstractBlob
-    B::Bloberia                  # Parent folder
+    B::Bloberia     # Parent folder
     id::String
     root::String
     frames::FRAMES_DEPOT_TYPE    # ram/disk frame
-    temp::DICT_DEPOT_TYPE        # ram only # TODO/TAI: make Union{Nothing, Dict...}
+    # ram only
+    temp::DICT_DEPOT_TYPE
 end
 
 ## .-- . -. - .--..- -- .- - --..-.-.- .- -.--
 # This is an object defined across different bframes
-struct iBlob <: AbstractBlob
+struct Blob <: AbstractBlob
     bb::BlobBatch          # owner batch
     uuid::UInt128          # unique universal id
-    function iBlob(bb, uuid)
+    function Blob(bb, uuid)
         new(bb, UInt128(uuid))
     end
 end

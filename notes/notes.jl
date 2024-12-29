@@ -1,3 +1,23 @@
+# v7 DESIGN
+# - a blob is just a leave in the blobtree
+# - the blobtree is analogous to a filetree, a blob would then be analogous to a file.
+# - the other nodes are folders.
+# - The objects (Bloberia, BlobBatch, etc) represent nodes on the tree.
+# - for instance, a BlobBatch is a subnode of Bloberia which can have children blobs or folders. 
+# - BlobBatch folders contains Blob blobs (files)...
+# - The disk layout of the blobtree is implementation free.
+#   - This allows us to convinient data structures (like batches)
+# - so, you can refer to a blob by indexing node Objects
+#   - ex: if B::Bloberia, B[["meta"]] is a blob in a Bloberia
+#       - B/meta
+#   - ex: if b::Blob, b[["meta"]] is a blob in the meta frame of a BlobBatch
+#       - B/bb/meta/b
+#   - ex: if bb::BlobBatch, bb[["meta"]] is a the meta blob
+#       - B/bb/meta
+# - blob are dictionaries
+#   - b["meta", "key"] refers to B/bb/meta/b:key
+
+
 # TODO:
 # - implement reset!, which refresh the ram data as it is currently at disk
 
