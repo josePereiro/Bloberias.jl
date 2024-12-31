@@ -52,6 +52,18 @@ function _ondemand_try_load_frame!(ab::AbstractBlob, frameid::String)
 end
 
 ## --.-.--..-- - -- - - - -- . . . .. -. - - -- - 
+# frame load mk
+
+# errorless version of _ondemand_load_frame!
+function _ondemand_try_loadmk_frame!(ab::AbstractBlob, frameid::String)
+    _frame_demand_load_I(ab, frameid) || return nothing
+    _try_load_frame!(ab, frameid)
+    _hasframe_depot(ab, frameid) && return nothing
+    _mk_depotpath_I!(ab, frameid)
+    return nothing
+end
+
+## --.-.--..-- - -- - - - -- . . . .. -. - - -- - 
 # frame disk/ram accessors
 
 # look for frame first at depot later at file
@@ -113,19 +125,16 @@ function _getindex_depotdisk_blob(ab::AbstractBlob, frameid::String, key::String
     return _getindex_depot_blob(ab, frameid, key)
 end
 
-# function _setindex_depot_blob!(ab::AbstractBlob, frameid::String, key::String, val)
-function _setindex_depotdisk_blob!(ab::AbstractBlob, frameid::String, key::String, val)
+function _setindex_depotdisk_blob!(ab::AbstractBlob, val, frameid::String, key::String)
     _ondemand_try_load_frame!(ab, frameid)
-    return _setindex_depot_blob!(ab, frameid, key, val)
+    return _setindex_depot_blob!(ab, val, frameid, key)
 end
 
-# function _get_depot_blob(dflt::Function, ab::AbstractBlob, frameid::String, key::String)
 function _get_depotdisk_blob(dflt::Function, ab::AbstractBlob, frameid::String, key::String)
     _ondemand_try_load_frame!(ab, frameid)
     return _get_depot_blob(dflt, ab, frameid, key)
 end
 
-# function _get_depot_blob!(dflt::Function, ab::AbstractBlob, frameid::String, key::String)
 function _get_depotdisk_blob!(dflt::Function, ab::AbstractBlob, frameid::String, key::String)
     _ondemand_try_load_frame!(ab, frameid)
     return _get_depot_blob!(dflt, ab, frameid, key)
@@ -136,7 +145,13 @@ end
 
 function _serialize_depot_frame(ab::AbstractBlob, frameid::String)
     dat = _getindex_depot_frame(ab, frameid)
-    path = _frame_filepath_I(ab, frameid)
+    path = _frame_filepath(ab, frameid)
     _serialize_frame(path, dat)
 end
 
+function _ondemand_serialize_depot_frame(ab::AbstractBlob, frameid::String)
+    _frame_demand_serialization_I(ab, frameid) || return nothing
+    dat = _getindex_depot_frame(ab, frameid)
+    path = _frame_filepath(ab, frameid)
+    _serialize_frame(path, dat)
+end

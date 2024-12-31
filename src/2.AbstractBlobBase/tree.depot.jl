@@ -12,6 +12,22 @@ function _empty_depot!(ab::AbstractBlob)
     empty!(depot)
 end
 
+function _depotpath_I(ab::AbstractBlob, frameid::String) 
+    return _depotpath_I(ab, frameid, _frames_depot_I(ab))
+end
+
+function _mk_depotframe_I!(ab::AbstractBlob, frameid::String)
+    return _mk_depotframe_I!(ab, frameid, _frames_depot_I(ab))
+end
+
+function _has_depotpath_I(ab::AbstractBlob, frameid::String)
+    return _has_depotpath_I(ab, frameid, _frames_depot_I(ab))
+end
+
+function _mk_depotpath_I!(ab::AbstractBlob, frameid::String)
+    return _mk_depotpath_I!(ab, frameid, _frames_depot_I(ab))
+end
+
 ## --.-.--..-- - -- - - - -- . . . .. -. - - -- - 
 # frame depot accessors
 
@@ -22,9 +38,12 @@ function _getindex_depot_frame(ab::AbstractBlob, frameid::String)
 end
 
 # setindex on depot frame
+function _setindex_depot_frame!(depot::Dict, frameid::String, dat::Dict)
+    setindex!(depot, dat, frameid)
+end
+
 function _setindex_depot_frame!(ab::AbstractBlob, frameid::String, dat::Dict)
-    depot = _frames_depot_I(ab)
-    return setindex!(depot, dat, frameid)
+    return _setindex_depot_frame!(_frames_depot_I(ab), frameid, dat)
 end
 
 # get on depot frame
@@ -42,30 +61,44 @@ end
 ## --.-.--..-- - -- - - - -- . . . .. -. - - -- - 
 # blob depot accessor
 
+function _depot_blob(ab::AbstractBlob, frameid::String, onmiss = nothing)
+    _has_depotpath_I(ab, frameid) || return onmiss
+    _depot, _base = _depotpath_I(ab, frameid) 
+    _blob = getindex(_depot, _base)::Dict
+    return _blob
+end
+
+function _depot_blob!(ab::AbstractBlob, frameid::String)
+    _mk_depotpath_I!(ab, frameid)
+    _depot, _base = _depotpath_I(ab, frameid)
+    _blob = getindex(_depot, _base)::Dict
+    return _blob
+end
+
 function _getindex_depot_blob(ab::AbstractBlob, frameid::String, key::String)
-    _bdepot, bkey = _depotpath_I(ab, frameid) 
-    _blob = getindex(_bdepot, bkey)
+    _depot, _base = _depotpath_I(ab, frameid) 
+    _blob = getindex(_depot, _base)
     return getindex(_blob, key)
 end
 
-function _setindex_depot_blob!(ab::AbstractBlob, frameid::String, key::String, val)
+function _setindex_depot_blob!(ab::AbstractBlob, val, frameid::String, key::String)
     _mk_depotpath_I!(ab, frameid)
-    _bdepot, bkey = _depotpath_I(ab, frameid)
-    _blob = getindex(_bdepot, bkey)::Dict
+    _depot, _base = _depotpath_I(ab, frameid)
+    _blob = getindex(_depot, _base)::Dict
     return setindex!(_blob, val, key)
 end
 
 function _get_depot_blob(dflt::Function, ab::AbstractBlob, frameid::String, key::String)
     _has_depotpath_I(ab, frameid) || return dflt()
-    _bdepot, bkey = _depotpath_I(ab, frameid) 
-    _blob = getindex(_bdepot, bkey)::Dict
+    _depot, _base = _depotpath_I(ab, frameid) 
+    _blob = getindex(_depot, _base)::Dict
     return get(dflt, _blob, key)
 end
 
 function _get_depot_blob!(dflt::Function, ab::AbstractBlob, frameid::String, key::String)
     _mk_depotpath_I!(ab, frameid)
-    _bdepot, bkey = _depotpath_I(ab, frameid)
-    _blob = getindex(_bdepot, bkey)::Dict
+    _depot, _base = _depotpath_I(ab, frameid)
+    _blob = getindex(_depot, _base)::Dict
     return get!(dflt, _blob, key)
 end
 

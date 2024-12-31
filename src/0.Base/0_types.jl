@@ -1,16 +1,13 @@
 #TODO: check https://docs.julialang.org/en/v1/base/collections/#Dictionaries for cool Dictlike datatypes
 
 ## .-- . -. - .--..- -- .- - --..-.-.- .- -.--
-# The base object
-abstract type BlobyObj end
-
 # IDEA: dev ContextDB interface in another package
 # - It can run on top of Bloberia
 
 ## .-- . -. - .--..- -- .- - --..-.-.- .- -.--
 # depot types
 
-# TODO: Define type
+# TODO: Narrow types
 
 const UUIDS_DEPOT_TYPE = Set{UInt128}
 const DICT_DEPOT_TYPE = Dict{Any, Any}
@@ -25,7 +22,7 @@ const FRAMES_DEPOT_TYPE = Dict{Any, Any}
 ## .-- . -. - .--..- -- .- - --..-.-.- .- -.--
 # An indexable object to interact with data
 # Node in the blobtree
-abstract type AbstractBlob <: BlobyObj end
+abstract type AbstractBlob end
 
 ## .-- . -. - .--..- -- .- - --..-.-.- .- -.--
 # TODO: copy pkg README into Bloberia folder
@@ -54,23 +51,23 @@ end
 
 ## .-- . -. - .--..- -- .- - --..-.-.- .- -.--
 # This is an object defined across different bframes
-struct iBlob <: AbstractBlob
+struct bBlob <: AbstractBlob
     bb::BlobBatch          # owner batch
     uuid::UInt128          # unique universal id
-    function iBlob(bb, uuid)
+    function bBlob(bb, uuid)
         new(bb, UInt128(uuid))
     end
 end
 
 ## --.--. - .-. .- .--.-.- .- .---- ... . .-.-.-.- 
-struct BlobyRef{lT, rT} <: BlobyObj
+struct BlobyRef{lT, rT} 
     link::Dict{String, Any}  # All coordinates   
     BlobyRef(ltype::Symbol, rtype::DataType) = new{ltype, rtype}(Dict())
 end
 
 ## --.--. - .-. .- .--.-.- .- .---- ... . .-.-.-.- 
 # allow ref rolling
-struct RefCacher <: BlobyObj
+struct RefCacher
     depot_cache::Dict{UInt, AbstractBlob}   # path => bb
 end
 

@@ -20,28 +20,32 @@ module Bloberias
     include("0.Base/utils.jl")
 
     #! include 1.BlobyObjBase
-    include("1.BlobyObjBase/base.jl")
-    include("1.BlobyObjBase/lock.jl")
     
     #! include 2.AbstractBlobBase
     include("2.AbstractBlobBase/base.jl")
-    include("2.AbstractBlobBase/depot.jl")
-    include("2.AbstractBlobBase/depotdisk.jl")
-    include("2.AbstractBlobBase/disk.jl")
+    include("2.AbstractBlobBase/lock.jl")
+    include("2.AbstractBlobBase/tree.depot.jl")
+    include("2.AbstractBlobBase/tree.depotdisk.jl")
+    include("2.AbstractBlobBase/tree.disk.jl")
+    include("2.AbstractBlobBase/tree.pub.jl")
 
     #! include 3.BloberiaBase
     include("3.BloberiaBase/base.jl")
-    include("3.BloberiaBase/blob.interface.jl")
     include("3.BloberiaBase/blobbatch.jl")
+    include("3.BloberiaBase/iterator.jl")
+    include("3.BloberiaBase/serialize.jl")
+    include("3.BloberiaBase/tree.interface.jl")
     
     #! include 4.BlobBatchBase
     include("4.BlobBatchBase/base.jl")
-    include("4.BlobBatchBase/blob.interface.jl")
     include("4.BlobBatchBase/blob.jl")
+    include("4.BlobBatchBase/iterator.jl")
+    include("4.BlobBatchBase/serialize.jl")
+    include("4.BlobBatchBase/tree.interface.jl")
     
     #! include 5.bBlobBase
     include("5.bBlobBase/base.jl")
-    include("5.bBlobBase/blob.interface.jl")
+    include("5.bBlobBase/tree.interface.jl")
     
 
     @exportall_words()

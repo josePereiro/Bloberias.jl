@@ -1,4 +1,20 @@
 ## --.--. - .-. .- .--.-.- .- .---- ... . .-.-.-.- 
+# bbid
+
+const BLOBERIA_DEFAULT_BBID_PREFIX = "0"
+
+function rbbid(prefix::String) 
+    prefix = isempty(prefix) ? BLOBERIA_DEFAULT_BBID_PREFIX : prefix
+    string(prefix, ".", uuid_str())
+end
+rbbid() = rbbid(BLOBERIA_DEFAULT_BBID_PREFIX)
+
+dflt_bbid() = "bb0"
+
+# TODO: move to bBlob
+rbid() = uuid_int()
+
+## --.--. - .-. .- .--.-.- .- .---- ... . .-.-.-.- 
 # Create an blobbatch
 
 function blobbatch(B::Bloberia, bbid0) # existing batch
@@ -6,13 +22,15 @@ function blobbatch(B::Bloberia, bbid0) # existing batch
     isdir(bb) || error("Batch not found, bbid0: ", repr(bbid0))
     return bb
 end
+blobbatch(B::Bloberia) = blobbatch(dflt_bbid())
 
 function blobbatch!(B::Bloberia, bbid0) # potentially new
     return BlobBatch(B, bbid0)
 end
-blobbatch!(B::Bloberia) = blobbatch!(B, BLOBERIA_DEFAULT_BBID)
+blobbatch!(B::Bloberia) = blobbatch!(B, dflt_bbid())
 
 # ## --.--. - .-. .- .--.-.- .- .---- ... . .-.-.-.- 
+# TODO: Move to Bloberia get index
 # # WARNING: Order is not warranted
 # function blobbatch(B::Bloberia, idx::Integer) # existing batch
 #     idx < 1 && error("idx < 0, idx: ", idx)
@@ -25,19 +43,7 @@ blobbatch!(B::Bloberia) = blobbatch!(B, BLOBERIA_DEFAULT_BBID)
 # end
 
 ## --.--. - .-. .- .--.-.- .- .---- ... . .-.-.-.- 
-# random ids
-const BLOBERIA_DEFAULT_BBID_PREFIX = "0"
-
-function rbbid(prefix::String) 
-    prefix = isempty(prefix) ? BLOBERIA_DEFAULT_BBID_PREFIX : prefix
-    string(prefix, ".", uuid_str())
-end
-rbbid() = rbbid(BLOBERIA_DEFAULT_BBID_PREFIX)
-
-rbid() = uuid_int()
-
-## --.--. - .-. .- .--.-.- .- .---- ... . .-.-.-.- 
-function getbatch!(filter::Function, B::Bloberia, prefix, missid)
+function getbatch!(filter::Function, B::Bloberia, prefix, missid = dflt_bbid())
     # find head
     for bb in eachbatch(B, prefix)
         filter(bb) === true || continue
@@ -47,7 +53,7 @@ function getbatch!(filter::Function, B::Bloberia, prefix, missid)
     return blobbatch!(B, missid)
 end
 
-getbatch!(B::Bloberia, prefix, missid) = 
+getbatch!(B::Bloberia, prefix, missid = dflt_bbid()) = 
     getbatch!(_constant(true), B, prefix, missid)
 
 ## --.--. - .-. .- .--.-.- .- .---- ... . .-.-.-.- 

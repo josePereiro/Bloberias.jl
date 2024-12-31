@@ -17,15 +17,28 @@ Base.copy(bb::BlobBatch) = BlobBatch(bb.B, bb.id)
 # build path
 _batchpath(B_root::String, id::String) = joinpath(B_root, id)
 
-_blobypath(bb::BlobBatch) = bb.root
-
 ## --.--. - .-. .- .--.-.- .- .---- ... . .-.-.-.- 
-# BlobyObj interface
+# Bloberia interface
 
 bloberia(bb::BlobBatch) = bb.B
 blobbatch(bb::BlobBatch) = bb
 batchpath(bb::BlobBatch) = bb.root
-batchpath(bo::BlobyObj) = batchpath(blobbatch(bo))
+
+batchpath(ab::AbstractBlob) = batchpath(blobbatch(ab))
+
+## --.--. - .-. .- .--.-.- .- .---- ... . .-.-.-.- 
+# custom depots
+
+_getmeta_I!(bb::BlobBatch) = getframe!(bb, "meta")
+_gettemp_I!(bb::BlobBatch) = bb.temp
+
+# return the registry of bBlob uuids
+function getbuuids!(bb::BlobBatch)
+    return get!(bb, "buuids", "reg") do
+        Set{UInt128}()
+    end
+end
+
 
 ## --.--. - .-. .- .--.-.- .- .---- ... . .-.-.-.- 
 # An identity hash for the object
@@ -37,9 +50,25 @@ function _lock_obj_identity_hash(bb::BlobBatch, h0 = UInt64(0))::UInt64
 end
 
 ## --.--. - .-. .- .--.-.- .- .---- ... . .-.-.-.- 
-# TODO: add tests
+# Set the batch bframes limit
+function bloblim(bb::BlobBatch)
+    bb_lim = getmeta(bb, "config.blobs.lim", -1)::Int
+    bb_lim > 0 && return bb_lim
+    
+    B_lim = getmeta(bb.B, "config.batches.blobs.lim", -1)::Int
+    B_lim > 0 && return B_lim
 
-import Base.filesize
-function Base.filesize(bb::BlobBatch)
-    return _recursive_filesize(batchpath(bb))
+    return typemax(Int)
+end
+
+function bloblim!(bb::BlobBatch, lim::Int)
+    setmeta!(bb, lim, "config.blobs.lim")
+end
+
+function isfullbatch(bb::BlobBatch)
+    return blobcount(bb) >= bloblim(bb)
+end
+
+function isoverflowed(bb::BlobBatch)
+    return blobcount(bb) > bloblim(bb)
 end

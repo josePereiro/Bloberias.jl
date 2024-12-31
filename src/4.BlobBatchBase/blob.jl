@@ -4,13 +4,13 @@
 function blob(bb::BlobBatch, uuid::Integer)
     buuids = getbuuids!(bb)
     uuid ∈ buuids || error("Uuid ", repr(uuid), " not present")
-    return iBlob(bb, uuid)
+    return bBlob(bb, uuid)
 end
 
 # registrer a new blob if it does not exist
 function blob!(bb::BlobBatch, uuid::Integer)
     uuid = UInt128(uuid)
-    b = iBlob(bb, uuid)
+    b = bBlob(bb, uuid)
     buuids = getbuuids!(bb)
     uuid ∈ buuids && return b
     isfullbatch(bb) && error("The batch is full, see 'blobcount' and 'vbloblim'")
