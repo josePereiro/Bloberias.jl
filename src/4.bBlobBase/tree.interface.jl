@@ -43,3 +43,6 @@ end
 function _frame_demand_load_I(b::bBlob, frameid::String)
     return _frame_demand_load_I(b.bb, frameid)
 end
+
+_is_serializable_I(::bBlob) = false
+_serializable_blob_I(b::bBlob) = b.bb

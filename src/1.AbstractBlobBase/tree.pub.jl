@@ -106,8 +106,8 @@ delete_frame!(ab::AbstractBlob) =
 
 ## --.-.--..-- - -- - - - -- . . . .. -. - - -- - 
 # empty! (work only on depot)
-import Base.empty!
-function Base.empty!(ab::AbstractBlob, path::String)
+
+function empty_depotpath!(ab::AbstractBlob, path::String)
     _depot, _base = _depotpath_I(ab, path)
     return empty!(_depot, _base)
 end
@@ -120,8 +120,15 @@ end
 empty_frame!(ab::AbstractBlob) = 
     empty_frame!(ab, _deflt_frameid_I(ab))
 
+empty_depot!(ab::AbstractBlob) = _empty_depot!(ab)    
 
-empty_depot!(ab::AbstractBlob) = _empty_depot!(ab)
+import Base.empty!
+function Base.empty!(ab::AbstractBlob, path::String)
+    empty_depotpath!(ab, path)
+end
+function Base.empty!(ab::AbstractBlob)
+    empty_depot!(ab)
+end
 
 ## --.-.--..-- - -- - - - -- . . . .. -. - - -- - 
 # getindex/setindex!
@@ -254,4 +261,120 @@ function mergeblobs!(mergef!::Function, ab::AbstractBlob;
     frameid = _deflt_frameid_I(ab)
     mergeblobs!(mergef!, ab, frameid; lk, mk)
 end
+
+## --.--. - .-. .- .--.-.- .- .---- ... . .-.-.-.- 
+_is_serializable_I(ab::AbstractBlob) = false
+_always_serialize_I(ab::AbstractBlob, frameid) = false
+
+function _serialize!(ab::AbstractBlob, frameid0, force)
+    
+    if !_is_serializable_I(ab)
+        force || error("Non serializable blob, type: ", typeof(ab), ". See 'force' option.")
+        ab1 = _serializable_blob_I(ab)
+        return _serialize!(ab1, frameid0, false)
+    end
+
+    # callback
+    onserialize!(ab)
+
+    # frames
+    _serialize_frames!(ab) do frameid
+        isnothing(frameid0) && return true # signal all
+        isempty(frameid0) && return true   # signal all
+        _always_serialize_I(ab, frameid) && return true   # always serialize 
+        return frameid == frameid0
+    end
+
+    return nothing
+end
+function serialize!(ab::AbstractBlob, frameid = nothing; 
+        lk = false, 
+        force = false
+    )
+    _is_serializable_I
+    __dolock(ab, lk) do
+        _serialize!(ab, frameid, force)
+    end
+end
+
+## --.-.--..-- - -- - - - -- . . . .. -. - - -- - 
+# blobio
+
+# :set! = setindex! f() to ram
+# :setser! = set! and then serialize!
+# :get! = get! f() from ram/disk
+# ::getser! = get! and then, if  issing, serialize!
+# :dry = run f() return empty ref
+function _blobio!(f::Function, ab::AbstractBlob, frame, key::String, mode::Symbol)
+    if mode == :set!
+        val = f()
+        setindex!(ab, val, frame, key)
+        return blobyref(ab, frame, key; rT = typeof(val))
+    end
+    if mode == :setser!
+        val = f()
+        setindex!(ab, val, frame, key)
+        serialize!(ab)
+        return blobyref(ab, frame, key, rT = typeof(val))
+    end
+    # TODO: Think about it
+    # What to do if 'frame, key' is missing
+    # get will not modify ram nor disk
+    # where should the blobyref point to?
+    # if mode == :get
+    #     val = get(f, ab, frame, key)
+    #     return blobyref(ab, frame, key, typeof(val))
+    # end
+    if mode == :get!
+        val = get!(f, ab, frame, key)
+        return blobyref(ab, frame, key, rT = typeof(val))
+    end
+    if mode == :getser!
+        _ser_flag = false
+        val = get!(ab, frame, key) do
+            _ser_flag = true
+            return f()
+        end
+        _ser_flag && serialize!(ab)
+        return blobyref(ab, frame, key; rT = typeof(val))
+    end
+    if mode == :dry
+        val = f()
+        return blobyref(ab, frame, key; rT = typeof(val))
+    end
+    error("Unknown mode, ", mode, ". see blobio! src")
+end
+
+function blobio!(f::Function, 
+        ab::AbstractBlob, frame, key::String, 
+        mode::Symbol = :get!;
+        lk = false
+    )
+    __dolock(ab, lk) do
+        return _blobio!(f, ab, frame, key, mode)
+    end
+end
+function blobio!(f::Function, 
+        ab::AbstractBlob, key::String, 
+        mode::Symbol = :get!;
+        lk = false
+    ) 
+    frameid = dflt_frameid(ab)
+    blobio!(f, ab, frameid, key, mode; lk)
+end
+
+
+## --.--. - .-. .- .--.-.- .- .---- ... . .-.-.-.- 
+function hashio!(ab::AbstractBlob, val, mode = :getser!; 
+        prefix = "cache", 
+        hashfun = hash, 
+        abs = true, 
+        key = "val"
+    )
+    frame = string(prefix, ".", repr(hashfun(val)))
+    ref = blobyref(ab, frame, key; rT = typeof(val), abs)
+    blobio!(() -> val, ref, mode; ab)
+    return ref
+end
+
 

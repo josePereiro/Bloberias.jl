@@ -49,3 +49,27 @@ function _frame_demand_serialization_I(bb::BlobBatch, frameid::String)
     # isempty(getindex(bb.frames, frameid)) && return false
     return false
 end
+
+
+## --.--. - .-. .- .--.-.- .- .---- ... . .-.-.-.- 
+# serialization
+
+function onserialize!(bb::BlobBatch, args...)
+    
+    # default up meta
+    meta = getmeta(bb)
+    meta["serialization.last.time"] = time()
+    meta["blobs.cached.count"] = blobcount(bb)
+    
+    # custom callbacks
+    run_callbacks((BlobBatch, "onserialize!"))
+
+    return nothing
+end
+
+_is_serializable_I(::BlobBatch) = true
+
+function _always_serialize_I(::BlobBatch, frameid) 
+    frameid == "meta" && return true
+    return false
+end

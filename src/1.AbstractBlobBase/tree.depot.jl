@@ -2,6 +2,8 @@
 # hasframe
 
 # check for frame in depot
+# A frame is a node the blobtree.
+# A subtree from this node is exactly contain in the disk version of the blobtree.
 function _hasframe_depot(ab::AbstractBlob, frameid::String) 
     depot = _frames_depot_I(ab)
     return haskey(depot, frameid) 
@@ -12,20 +14,25 @@ function _empty_depot!(ab::AbstractBlob)
     empty!(depot)
 end
 
+# This is the  main method for the blobtree interface
+# It returns a depot obj (a dict) and an index which defines a full path
+# to a blob.
+# Here the path is parametrize by an AbstractBlob object and  a frameid.
 function _depotpath_I(ab::AbstractBlob, frameid::String) 
     return _depotpath_I(ab, frameid, _frames_depot_I(ab))
-end
-
-function _mk_depotframe_I!(ab::AbstractBlob, frameid::String)
-    return _mk_depotframe_I!(ab, frameid, _frames_depot_I(ab))
 end
 
 function _has_depotpath_I(ab::AbstractBlob, frameid::String)
     return _has_depotpath_I(ab, frameid, _frames_depot_I(ab))
 end
 
+# populate a path on the blob tree
 function _mk_depotpath_I!(ab::AbstractBlob, frameid::String)
     return _mk_depotpath_I!(ab, frameid, _frames_depot_I(ab))
+end
+
+function _mk_depotframe_I!(ab::AbstractBlob, frameid::String)
+    return _mk_depotframe_I!(ab, frameid, _frames_depot_I(ab))
 end
 
 ## --.-.--..-- - -- - - - -- . . . .. -. - - -- - 

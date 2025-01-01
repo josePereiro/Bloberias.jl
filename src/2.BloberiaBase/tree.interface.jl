@@ -47,3 +47,28 @@ function _frame_demand_serialization_I(B::Bloberia, frameid::String)
     # isempty(getindex(B.frames, frameid)) && return false
     return false
 end
+
+# TODO: move to AbstractBlob
+# - create an interface common for AbstractBlobs
+# - control who can serialize! using _is_serializable_I(ab)::Bool interface
+#   - add force kwarg to force
+
+## --.--. - .-. .- .--.-.- .- .---- ... . .-.-.-.- 
+function onserialize!(B::Bloberia, args...)
+    
+    # default up meta
+    meta = getmeta(B)
+    meta["serialization.last.time"] = time()
+    
+    # custom callbacks
+    run_callbacks((Bloberia, "onserialize!"))
+
+    return nothing
+end
+
+_is_serializable_I(::Bloberia) = true
+
+function _always_serialize_I(::Bloberia, frameid) 
+    frameid == "meta" && return true
+    return false
+end
