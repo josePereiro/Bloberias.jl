@@ -73,3 +73,16 @@ function _always_serialize_I(::BlobBatch, frameid)
     frameid == "meta" && return true
     return false
 end
+
+## --.-.--..-- - -- - - - -- . . . .. -. - - -- - 
+# Order is not garantied
+import Base.getindex
+function Base.getindex(bb::BlobBatch, idx::Int64)
+    bch = eachblob(bb)
+    tot = 0
+    for (bi, b) in enumerate(bch)
+        bi == idx && return b
+        tot += 1
+    end
+    error("Index out of bound, idx: ", idx, ", tot: ", tot)
+end

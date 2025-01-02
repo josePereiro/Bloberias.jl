@@ -43,7 +43,17 @@ blobbatch!(B::Bloberia) = blobbatch!(B, dflt_bbid())
 # end
 
 ## --.--. - .-. .- .--.-.- .- .---- ... . .-.-.-.- 
-function getbatch!(filter::Function, B::Bloberia, prefix, missid = dflt_bbid())
+function findbatch(filter::Function, B::Bloberia, prefix, onmiss = nothing)
+    # find head
+    for bb in eachbatch(B, prefix)
+        filter(bb) === true || continue
+        return bb
+    end
+    # or new
+    return onmiss
+end
+
+function findbatch!(filter::Function, B::Bloberia, prefix, missid = dflt_bbid())
     # find head
     for bb in eachbatch(B, prefix)
         filter(bb) === true || continue
@@ -53,8 +63,8 @@ function getbatch!(filter::Function, B::Bloberia, prefix, missid = dflt_bbid())
     return blobbatch!(B, missid)
 end
 
-getbatch!(B::Bloberia, prefix, missid = dflt_bbid()) = 
-    getbatch!(_constant(true), B, prefix, missid)
+findbatch!(B::Bloberia, prefix, missid = dflt_bbid()) = 
+    findbatch!(_constant(true), B, prefix, missid)
 
 ## --.--. - .-. .- .--.-.- .- .---- ... . .-.-.-.- 
 # look for non full batchs
@@ -68,7 +78,7 @@ function headbatch(B::Bloberia, prefix = "")::BlobBatch
     error("No empty batch found, prefix ", repr(prefix))
 end
 
-# TODO: TAI: change for a getbatch!(filter::Function, B, prefix, missid)
+# TODO: TAI: change for a findbatch!(filter::Function, B, prefix, missid)
 function headbatch!(missid::Function, B::Bloberia, prefix = nothing)::BlobBatch
     # find head
     for bb in eachbatch(B, prefix)

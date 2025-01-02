@@ -72,3 +72,15 @@ function _always_serialize_I(::Bloberia, frameid)
     frameid == "meta" && return true
     return false
 end
+
+## --.-.--..-- - -- - - - -- . . . .. -. - - -- - 
+import Base.getindex
+function Base.getindex(B::Bloberia, idx::Int64)
+    bbch = eachbatch(B; sortfun = sort!)
+    tot = 0
+    for (bbi, bb) in enumerate(bbch)
+        bbi == idx && return bb
+        tot += 1
+    end
+    error("Index out of bound, idx: ", idx, ", tot:", tot)
+end

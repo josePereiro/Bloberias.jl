@@ -1,4 +1,24 @@
 # v7 DESIGN
+# TODO: implement this
+# - a blob is a dict node in the blobtree
+# - the blobtree is just a JSON kind of struct
+# - a frame is the blob that will be represented on disk
+# - BlobHandlers are objects that interface operation on blobs
+#   - #TODO: rename AbstractBlob to BlobHandlers
+# - a blobpath is just a tuple of elements that define the path to retrive a blob in the blobtree
+#   - the tuple can contain anything
+#   - for instance (Bloberia, "frameid") represent a blob (a frame blob) ina  Bloberia depot.
+# - the path is resolved by _blobpath_I(...) method
+#   - the method must return the blob's parent container and the blob's key
+#   - for instance _blobpath_I(Bloberia, "frameid") returns (B.frames, "frameid")
+# - there is not limits for the path _blobpath_I(obj, bla, bla, bla) can return just something else.
+#   - but it should be consistant with the frame interface
+#       - that is, it should be contained on the frames depot so serialization will capture the path. 
+# - a _framepath_I(...) will return the path to the frame blob
+#   - each handler should have only one frame/depot (?)
+#   - but handlers might share frame/depots. 
+
+# v7 DESIGN
 # - a blob is just a leave in the blobtree
 # - the blobtree is analogous to a filetree, a blob would then be analogous to a file.
 # - the other nodes are folders.

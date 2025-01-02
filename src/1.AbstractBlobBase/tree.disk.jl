@@ -23,14 +23,19 @@ end
 
 function _diskframes(ab::AbstractBlob; join = false, sort = false)
     dir = _frames_depotdir_I(ab)
-    isdir(dir) || return String[]
-    return filter(_is_frame_filepath, readdir(dir; join, sort))
+    frames = String[]
+    isdir(dir) || return frames
+    for file in readdir(dir; join, sort)
+        _is_frame_filepath(file) || continue
+        frameid = _frameid_from_file(file)
+        push!(frames, frameid)
+    end
+    return frames
 end
 
 function _with_diskframes(fun::Function, ab::AbstractBlob)
-    paths = _diskframes(ab; join = false)
-    for path in paths
-        frameid = _frameid_from_file(path)
+    frames = _diskframes(ab; join = false)
+    for frameid in frames
         fun(frameid) === :break && break
     end
 end

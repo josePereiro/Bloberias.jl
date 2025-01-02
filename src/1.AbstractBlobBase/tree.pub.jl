@@ -192,6 +192,15 @@ function Base.get!(ab::AbstractBlob, key::String, dflt)
 end
 
 ## --.-.--..-- - -- - - - -- . . . .. -. - - -- - 
+# merge!
+import Base.merge!
+function Base.merge!(ab::AbstractBlob, frameid, blob0::Dict)
+    _blob = _depot_blob!(ab, frameid)
+    merge!(_blob, blob0)
+    return nothing
+end
+
+## --.-.--..-- - -- - - - -- . . . .. -. - - -- - 
 # load
 function ondemand_load!(ab::AbstractBlob, frameid::String)
     _ondemand_try_load_frame!(ab, frameid)
@@ -204,7 +213,7 @@ end
 
 function loadall_frames!(fil::Function, ab::AbstractBlob)
     _with_diskframes(ab) do frameid
-        fil(frameid) === true && return :continue
+        fil(frameid) === true || return :continue
         _load_frame!(ab, frameid)
     end
 end
@@ -213,7 +222,7 @@ loadall_frames!(ab::AbstractBlob) =
 
 function ondemand_loadall!(fil::Function, ab::AbstractBlob)
     _with_diskframes(ab) do frameid
-        fil(frameid) === true && return :continue
+        fil(frameid) === true || return :continue
         _ondemand_load_frame!(ab, frameid)
     end
 end
@@ -249,9 +258,10 @@ function mergeblobs!(mergef!::Function, ab::AbstractBlob, frameid::String;
             _depot_blob!(ab, frameid) : 
             _depot_blob(ab, frameid, nothing)
         diskblob = _disk_blob(ab, frameid, nothing)
-        mergef!(ramblob, diskblob) === :abort && return ramblob
+        ret = mergef!(ramblob, diskblob) 
+        ret === :abort && return ramblob
         _serialize_depot_frame(ab, frameid)
-        return ramblob
+        return ret
     end
 end
 
@@ -363,7 +373,6 @@ function blobio!(f::Function,
     blobio!(f, ab, frameid, key, mode; lk)
 end
 
-
 ## --.--. - .-. .- .--.-.- .- .---- ... . .-.-.-.- 
 function hashio!(ab::AbstractBlob, val, mode = :getser!; 
         prefix = "cache", 
@@ -377,4 +386,9 @@ function hashio!(ab::AbstractBlob, val, mode = :getser!;
     return ref
 end
 
-
+## --.--. - .-. .- .--.-.- .- .---- ... . .-.-.-.- 
+import Base.getindex
+function Base.getindex(ab::AbstractBlob)
+    ondemand_loadall!(ab)
+    return ab
+end

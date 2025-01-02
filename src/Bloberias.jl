@@ -23,6 +23,7 @@ module Bloberias
     include("1.AbstractBlobBase/base.jl")
     include("1.AbstractBlobBase/callbacks.jl")
     include("1.AbstractBlobBase/lock.jl")
+    include("1.AbstractBlobBase/show.jl")
     include("1.AbstractBlobBase/tree.depot.jl")
     include("1.AbstractBlobBase/tree.depotdisk.jl")
     include("1.AbstractBlobBase/tree.disk.jl")
@@ -32,16 +33,19 @@ module Bloberias
     include("2.BloberiaBase/base.jl")
     include("2.BloberiaBase/blobbatch.jl")
     include("2.BloberiaBase/iterator.jl")
+    include("2.BloberiaBase/show.jl")
     include("2.BloberiaBase/tree.interface.jl")
     
     #! include 3.BlobBatchBase
     include("3.BlobBatchBase/base.jl")
     include("3.BlobBatchBase/blob.jl")
     include("3.BlobBatchBase/iterator.jl")
+    include("3.BlobBatchBase/show.jl")
     include("3.BlobBatchBase/tree.interface.jl")
     
     #! include 4.bBlobBase
     include("4.bBlobBase/base.jl")
+    include("4.bBlobBase/show.jl")
     include("4.bBlobBase/tree.interface.jl")
 
     #! include 5.BlobyRefBase

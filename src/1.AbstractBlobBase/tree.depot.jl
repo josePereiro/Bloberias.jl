@@ -76,7 +76,7 @@ function _depot_blob(ab::AbstractBlob, frameid::String, onmiss = nothing)
 end
 
 function _depot_blob!(ab::AbstractBlob, frameid::String)
-    _mk_depotpath_I!(ab, frameid)
+    _has_depotpath_I(ab, frameid) || _mk_depotpath_I!(ab, frameid)
     _depot, _base = _depotpath_I(ab, frameid)
     _blob = getindex(_depot, _base)::Dict
     return _blob

@@ -93,6 +93,13 @@ end
 
 _constant(v) = (x...) -> v 
 
+function _bb_show_file_sortby(ph)
+    name = basename(ph)
+    name == "meta.jls" && return "."
+    name == "buuids.jls" && return ".."
+    return name
+end
+
 function _show_disk_files(filter::Function, io::IO, root; 
             fc = :normal, 
             bc = :normal,
