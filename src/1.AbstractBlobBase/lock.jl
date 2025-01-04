@@ -32,8 +32,17 @@ function getlockfile(ab::AbstractBlob, args...)
     B = bloberia(ab)
     # filepath
     _file = _pidfile_path(ab, args...; B)
-    gettemp!(B, _file) do
-        return SimpleLockFile(_file)
+    # To avoid 
+    # AssertionError: Multiple concurrent writes to Dict detected!
+    # Im locking the access to the getlockfile
+    # TODO: reseach about the best way to do this.
+    lk = gettemp!(B, "getlockfile.lk") do 
+        ReentrantLock()
+    end
+    return lock(lk) do
+        gettemp!(B, _file) do
+            return SimpleLockFile(_file)
+        end
     end
 end
 
