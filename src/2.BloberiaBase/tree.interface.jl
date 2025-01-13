@@ -84,3 +84,16 @@ function Base.getindex(B::Bloberia, idx::Int64)
     end
     error("Index out of bound, idx: ", idx, ", tot:", tot)
 end
+
+function Base.getindex(B::Bloberia, pt::Regex)
+    # search in batch
+    found = findbatch(B, nothing, nothing) do _bb
+        m = match(pt, _bb.id)
+        isnothing(m) && return false
+        return true
+    end
+    isnothing(found) || return found
+    # search in blob (?)
+
+    return found
+end
