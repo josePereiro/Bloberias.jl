@@ -1,5 +1,5 @@
 ## --.-.--..-- - -- - - - -- . . . .. -. - - -- - 
-# hasframe
+#MARK: hasframe
 
 # check for frame in depot
 # A frame is a node the blobtree.
@@ -36,7 +36,8 @@ function _mk_depotframe_I!(ab::AbstractBlob, frameid::String)
 end
 
 ## --.-.--..-- - -- - - - -- . . . .. -. - - -- - 
-# frame depot accessors
+# accessors
+#MARK: frame depot
 
 # getindex on depot frame
 function _getindex_depot_frame(ab::AbstractBlob, frameid::String)
@@ -66,7 +67,8 @@ function _get_depot_frame!(dflt::Function, ab::AbstractBlob, frameid::String)
 end
 
 ## --.-.--..-- - -- - - - -- . . . .. -. - - -- - 
-# blob depot accessor
+# accessor
+#MARK: blob depot
 
 function _depot_blob(ab::AbstractBlob, frameid::String, onmiss = nothing)
     _has_depotpath_I(ab, frameid) || return onmiss

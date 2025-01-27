@@ -3,7 +3,7 @@
 dflt_frameid(ab::AbstractBlob) = _deflt_frameid_I(ab)
 
 ## --.-.--..-- - -- - - - -- . . . .. -. - - -- - 
-# get frames
+#MARK: get frames
 
 function getframe(ab::AbstractBlob, frameid::String)
     _ondemand_try_load_frame!(ab, frameid)
@@ -21,7 +21,7 @@ function getframe!(ab::AbstractBlob, frameid::String)
 end
 
 ## --.-.--..-- - -- - - - -- . . . .. -. - - -- - 
-# hasframe
+#MARK: hasframe
 
 hasframe_depot(ab::AbstractBlob, frameid::String) =
     _hasframe_depot(ab, frameid)
@@ -40,7 +40,8 @@ hasframe(ab::AbstractBlob) =
 
     
 ## --.-.--..-- - -- - - - -- . . . .. -. - - -- - 
-# haskey (work only on depot)
+#MARK: haskey 
+# work only on depot
 
 import Base.haskey
 function Base.haskey(ab::AbstractBlob, frameid::String, key::String)
@@ -53,7 +54,7 @@ Base.haskey(ab::AbstractBlob, key::String) =
     haskey(ab, _deflt_frameid_I(ab), key)
 
 ## --.-.--..-- - -- - - - -- . . . .. -. - - -- - 
-# file interface
+#MARK: file interface
 
 import Base.isdir
 Base.isdir(ab::AbstractBlob) = isdir(_rootdir_I(ab))
@@ -70,7 +71,8 @@ Base.filesize(ab::AbstractBlob) =
     _recursive_filesize(_rootdir_I(ab))
 
 ## --.-.--..-- - -- - - - -- . . . .. -. - - -- - 
-# keys/values (work only on depot)
+#MARK: keys/values
+# work only on depot
 
 import Base.keys
 function Base.keys(ab::AbstractBlob, path::String)
@@ -89,7 +91,8 @@ Base.values(ab::AbstractBlob) =
     values(ab, _deflt_frameid_I(ab))
 
 ## --.-.--..-- - -- - - - -- . . . .. -. - - -- - 
-# delete! (work only on depot)
+#MARK: delete!
+# work only on depot
 import Base.delete!
 function Base.delete!(ab::AbstractBlob, path::String)
     _depot, _base = _depotpath_I(ab, path)
@@ -105,7 +108,8 @@ delete_frame!(ab::AbstractBlob) =
     delete_frame!(ab, _deflt_frameid_I(ab))
 
 ## --.-.--..-- - -- - - - -- . . . .. -. - - -- - 
-# empty! (work only on depot)
+#MARK: empty! 
+# work only on depot
 
 function empty_depotpath!(ab::AbstractBlob, path::String)
     _depot, _base = _depotpath_I(ab, path)
@@ -131,7 +135,7 @@ function Base.empty!(ab::AbstractBlob)
 end
 
 ## --.-.--..-- - -- - - - -- . . . .. -. - - -- - 
-# getindex/setindex!
+#MARK: getindex/setindex!
 
 import Base.getindex
 function Base.getindex(ab::AbstractBlob, frameid::String, key::String)
@@ -145,6 +149,12 @@ end
 function Base.getindex(ab::AbstractBlob, path::Vector)
     _depot, _base = _depotpath_I(ab, path...)
     return getindex(_depot, _base)
+end
+
+import Base.getindex
+function Base.getindex(ab::AbstractBlob)
+    ondemand_loadall!(ab)
+    return ab
 end
 
 import Base.setindex!
@@ -192,7 +202,7 @@ function Base.get!(ab::AbstractBlob, key::String, dflt)
 end
 
 ## --.-.--..-- - -- - - - -- . . . .. -. - - -- - 
-# merge!
+#MARK: merge!
 import Base.merge!
 function Base.merge!(ab::AbstractBlob, frameid, blob0::Dict)
     _blob = _depot_blob!(ab, frameid)
@@ -201,7 +211,7 @@ function Base.merge!(ab::AbstractBlob, frameid, blob0::Dict)
 end
 
 ## --.-.--..-- - -- - - - -- . . . .. -. - - -- - 
-# load
+#MARK: load
 function ondemand_load!(ab::AbstractBlob, frameid::String)
     _ondemand_try_load_frame!(ab, frameid)
     return nothing
@@ -231,6 +241,7 @@ ondemand_loadall!(ab::AbstractBlob) =
 
 
 ## ---- . .- ..- -.--.- . .-..--... - -- -. . .....
+#MARK: withblobs
 # get both ram and disk versions and allow you to have a do block
 # returns ram frame
 function withblobs(dofun::Function, ab::AbstractBlob, frameid::String)
@@ -245,7 +256,7 @@ function withblobs!(dofun::Function, ab::AbstractBlob, frameid::String)
     return dofun(ranblob, diskblob)
 end
 
-
+#MARK: mergeblobs!
 # merge disk version with ram version
 # 'f' allow you to custom merge frames dat
 # at the end, the ram data will be serialized back into disk...
@@ -273,6 +284,7 @@ function mergeblobs!(mergef!::Function, ab::AbstractBlob;
 end
 
 ## --.--. - .-. .- .--.-.- .- .---- ... . .-.-.-.- 
+#MARK: serialize!
 _is_serializable_I(ab::AbstractBlob) = false
 _always_serialize_I(ab::AbstractBlob, frameid) = false
 
@@ -308,60 +320,67 @@ function serialize!(ab::AbstractBlob, frameid = nothing;
 end
 
 ## --.-.--..-- - -- - - - -- . . . .. -. - - -- - 
-# blobio
+#MARK: blobio
+
+# TODO/TAI: a on blob version
+# _blobio!(ab, [frameid], :getser!) do blob
+#   blob["key1"] = 1
+#   blob["key1"] = 2
+# end
+# - return the blob (?)
 
 # :set! = setindex! f() to ram
 # :setser! = set! and then serialize!
 # :get! = get! f() from ram/disk
-# ::getser! = get! and then, if  issing, serialize!
+# :getser! = get! and then, if  issing, serialize!
 # :dry = run f() return empty ref
-function _blobio!(f::Function, ab::AbstractBlob, frame, key::String, mode::Symbol)
+function _blobio!(f::Function, ab::AbstractBlob, frameid, key::String, mode::Symbol)
     if mode == :set!
         val = f()
-        setindex!(ab, val, frame, key)
-        return blobyref(ab, frame, key; rT = typeof(val))
+        setindex!(ab, val, frameid, key)
+        return blobyref(ab, frameid, key; rT = typeof(val))
     end
     if mode == :setser!
         val = f()
-        setindex!(ab, val, frame, key)
+        setindex!(ab, val, frameid, key)
         serialize!(ab)
-        return blobyref(ab, frame, key, rT = typeof(val))
+        return blobyref(ab, frameid, key, rT = typeof(val))
     end
     # TODO: Think about it
-    # What to do if 'frame, key' is missing
+    # What to do if 'frameid, key' is missing
     # get will not modify ram nor disk
     # where should the blobyref point to?
     # if mode == :get
-    #     val = get(f, ab, frame, key)
-    #     return blobyref(ab, frame, key, typeof(val))
+    #     val = get(f, ab, frameid, key)
+    #     return blobyref(ab, frameid, key, typeof(val))
     # end
     if mode == :get!
-        val = get!(f, ab, frame, key)
-        return blobyref(ab, frame, key, rT = typeof(val))
+        val = get!(f, ab, frameid, key)
+        return blobyref(ab, frameid, key, rT = typeof(val))
     end
     if mode == :getser!
         _ser_flag = false
-        val = get!(ab, frame, key) do
+        val = get!(ab, frameid, key) do
             _ser_flag = true
             return f()
         end
         _ser_flag && serialize!(ab)
-        return blobyref(ab, frame, key; rT = typeof(val))
+        return blobyref(ab, frameid, key; rT = typeof(val))
     end
     if mode == :dry
         val = f()
-        return blobyref(ab, frame, key; rT = typeof(val))
+        return blobyref(ab, frameid, key; rT = typeof(val))
     end
     error("Unknown mode, ", mode, ". see blobio! src")
 end
 
 function blobio!(f::Function, 
-        ab::AbstractBlob, frame, key::String, 
+        ab::AbstractBlob, frameid, key::String, 
         mode::Symbol = :get!;
         lk = false
     )
     __dolock(ab, lk) do
-        return _blobio!(f, ab, frame, key, mode)
+        return _blobio!(f, ab, frameid, key, mode)
     end
 end
 function blobio!(f::Function, 
@@ -374,21 +393,16 @@ function blobio!(f::Function,
 end
 
 ## --.--. - .-. .- .--.-.- .- .---- ... . .-.-.-.- 
+#MARK: hashio! 
 function hashio!(ab::AbstractBlob, val, mode = :getser!; 
         prefix = "cache", 
         hashfun = hash, 
         abs = true, 
         key = "val"
     )
-    frame = string(prefix, ".", repr(hashfun(val)))
-    ref = blobyref(ab, frame, key; rT = typeof(val), abs)
+    frameid = string(prefix, ".", repr(hashfun(val)))
+    ref = blobyref(ab, frameid, key; rT = typeof(val), abs)
     blobio!(() -> val, ref, mode; ab)
     return ref
 end
 
-## --.--. - .-. .- .--.-.- .- .---- ... . .-.-.-.- 
-import Base.getindex
-function Base.getindex(ab::AbstractBlob)
-    ondemand_loadall!(ab)
-    return ab
-end
