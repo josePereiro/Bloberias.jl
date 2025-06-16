@@ -43,4 +43,4 @@ function Base.iterate(::BlobBatch, bb_state)
 end
 
 import Base.length
-Base.length(bb::BlobBatch) = vblobcount(bb)
+Base.length(bb::BlobBatch) = blobcount(bb)

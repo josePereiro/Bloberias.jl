@@ -44,7 +44,37 @@ end
 # returns a channel which iterates for all batches 
 # you can filter them
 # you can control the order
-function _eachbatch_th_ch(B::Bloberia, bbid_prefix = nothing; 
+# TODO/ make threaded version to return batches in order
+# - You can do that by spawing load tasks and fetch them  in order
+function _eachbatch_th_ch1(B::Bloberia, bbid_prefix = nothing; 
+        sortfun = identity, 
+        ch_size::Int = 1,
+        n_tasks::Int = nthreads(),
+        preload = []
+    )
+    @assert ch_size > 0
+    @assert n_tasks > 0
+    
+    tasks_ch = Channel{Task}(n_tasks) do _ch
+        dir_ch = _eachbatchdir_ch(B, ch_size, sortfun)
+        for path in dir_ch
+            tsk = @spawn _bb_from_path(B, path, bbid_prefix, preload)
+            put!(_ch, tsk)
+        end
+    end
+
+    return Channel{BlobBatch}(ch_size) do _ch
+        # here I need the ch for locking
+        for tks in tasks_ch
+            bb = fetch(tks)
+            isnothing(bb) && continue
+            put!(_ch, bb)
+        end
+    end # Channel
+end
+
+# MARK:_eachbatch_th_ch2
+function _eachbatch_th_ch2(B::Bloberia, bbid_prefix = nothing; 
         sortfun = identity, 
         ch_size::Int = 1,
         n_tasks::Int = nthreads(),
@@ -91,7 +121,7 @@ function eachbatch(B::Bloberia, bbid_prefix = nothing;
         preload = getmeta(B, "eachbatch.preload", String[])
     )
     if n_tasks > 1
-        return _eachbatch_th_ch(B, bbid_prefix; sortfun, ch_size, n_tasks, preload)
+        return _eachbatch_th_ch1(B, bbid_prefix; sortfun, ch_size, n_tasks, preload)
     else
         return _eachbatch_ser_ch(B, bbid_prefix; sortfun, ch_size, preload)
     end

@@ -313,7 +313,6 @@ function serialize!(ab::AbstractBlob, frameid = nothing;
         lk = false, 
         force = false
     )
-    _is_serializable_I
     __dolock(ab, lk) do
         _serialize!(ab, frameid, force)
     end
@@ -332,7 +331,7 @@ end
 # :set! = setindex! f() to ram
 # :setser! = set! and then serialize!
 # :get! = get! f() from ram/disk
-# :getser! = get! and then, if  issing, serialize!
+# :getser! = get! and then, if missing, serialize!
 # :dry = run f() return empty ref
 function _blobio!(f::Function, ab::AbstractBlob, frameid, key::String, mode::Symbol)
     if mode == :set!

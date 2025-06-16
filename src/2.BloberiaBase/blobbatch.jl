@@ -15,6 +15,7 @@ dflt_bbid() = "bb0"
 rbid() = uuid_int()
 
 ## --.--. - .-. .- .--.-.- .- .---- ... . .-.-.-.- 
+# MARK: blobbatch
 # Create an blobbatch
 
 function blobbatch(B::Bloberia, bbid0) # existing batch
@@ -22,7 +23,7 @@ function blobbatch(B::Bloberia, bbid0) # existing batch
     isdir(bb) || error("Batch not found, bbid0: ", repr(bbid0))
     return bb
 end
-blobbatch(B::Bloberia) = blobbatch(dflt_bbid())
+blobbatch(B::Bloberia) = blobbatch(B, dflt_bbid())
 
 function blobbatch!(B::Bloberia, bbid0) # potentially new
     return BlobBatch(B, bbid0)

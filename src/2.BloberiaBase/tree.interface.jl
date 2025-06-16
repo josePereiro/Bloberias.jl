@@ -74,6 +74,7 @@ function _always_serialize_I(::Bloberia, frameid)
 end
 
 ## --.-.--..-- - -- - - - -- . . . .. -. - - -- - 
+# MARK: Base.getindex
 import Base.getindex
 function Base.getindex(B::Bloberia, idx::Int64)
     bbch = eachbatch(B; sortfun = sort!)

@@ -7,6 +7,16 @@ BlobBatch(B::Bloberia, id) = BlobBatch(B, id,
     DICT_DEPOT_TYPE()
 )
 
+
+## --.--. - .-. .- .--.-.- .- .---- ... . .-.-.-.- 
+# rename_bb
+rename_bb(bb::BlobBatch, id::String) = BlobBatch(
+    bb.B, id,
+    _batchpath(bb.B.root, id),  # root
+    bb.frames,
+    DICT_DEPOT_TYPE()
+)
+
 ## --.--. - .-. .- .--.-.- .- .---- ... . .-.-.-.- 
 # shallow copy 
 Base.copy(bb::BlobBatch) = BlobBatch(bb.B, bb.id)
@@ -72,3 +82,5 @@ end
 function isoverflowed(bb::BlobBatch)
     return blobcount(bb) > bloblim(bb)
 end
+
+## --.--. - .-. .- .--.-.- .- .---- ... . .-.-.-.- 
